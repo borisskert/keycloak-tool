@@ -2,8 +2,8 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>de.adorsys.keycloak</groupId>
-	<artifactId>keycloak-tools</artifactId>
+	<groupId>com.github.borisskert</groupId>
+	<artifactId>keycloak-tool</artifactId>
 	<packaging>pom</packaging>
 	<version>0.9.0-SNAPSHOT</version>
 
@@ -24,8 +24,8 @@
 	</properties>
 
 	<name>keycloak-tools</name>
-	<url>https://github.com/adorsys/keycloak-config-cli</url>
-	<description>keycloak-tools (formerly keycloak-config-cli)</description>
+	<url>https://github.com/borisskert/keycloak-tool</url>
+	<description>keycloak-tool (formerly keycloak-config-cli)</description>
 
 	<licenses>
 		<license>
@@ -37,22 +37,14 @@
 	<developers>
 		<developer>
 			<name>Boris Skert</name>
-			<email>bsk@adorsys.de</email>
-			<organization>adorsys</organization>
-			<organizationUrl>https://adorsys.de/</organizationUrl>
-		</developer>
-		<developer>
-			<name>Francis Pouatcha</name>
-			<email>fpo@adorsys.de</email>
-			<organization>adorsys</organization>
-			<organizationUrl>https://adorsys.de/</organizationUrl>
+			<email>boris.skert@gmail.com</email>
 		</developer>
 	</developers>
 
 	<scm>
-		<connection>scm:git:https://github.com/adorsys/keycloak-config-cli.git</connection>
-		<developerConnection>scm:git:git@github.com:adorsys/keycloak-config-cli.git</developerConnection>
-		<url>git@github.com:adorsys/keycloak-config-cli.git</url>
+		<connection>scm:git:https://github.com/borisskert/keycloak-tool.git</connection>
+		<developerConnection>scm:git:git@github.com:borisskert/keycloak-tool.git</developerConnection>
+		<url>git@github.com:borisskert/keycloak-tool.git</url>
 		<tag>HEAD</tag>
 	</scm>
 
@@ -173,9 +165,6 @@
 								<Implementation-Version>${project.version}_${maven.build.timestamp}</Implementation-Version>
 								<Project-buildArtifact>${project.artifactId}</Project-buildArtifact>
 								<Project-buildVersion>${project.version}</Project-buildVersion>
-								<Project-buildTimestamp>${maven.build.timestamp}</Project-buildTimestamp>
-								<Project-buildNumber>${buildNumber}</Project-buildNumber>
-								<Project-buildScmBranch>${scmBranch}</Project-buildScmBranch>
 							</manifestEntries>
 						</archive>
 					</configuration>
@@ -198,112 +187,21 @@
 					</configuration>
 				</plugin>
 
-				<!-- https://mvnrepository.com/artifact/io.fabric8/docker-maven-plugin -->
 				<plugin>
 					<groupId>io.fabric8</groupId>
 					<artifactId>docker-maven-plugin</artifactId>
 					<version>0.27.2</version>
 				</plugin>
 
-				<!-- https://mvnrepository.com/artifact/org.jacoco/jacoco-maven-plugin -->
 				<plugin>
 					<groupId>org.jacoco</groupId>
 					<artifactId>jacoco-maven-plugin</artifactId>
-					<version>0.8.2</version>
+					<!-- https://stackoverflow.com/questions/55272870/surefire-maven-plugin-corrupted-stdout-by-directly-writing-to-native-stream-in-->
+					<version>0.8.5</version>
 				</plugin>
 			</plugins>
 		</pluginManagement>
 	</build>
-
-	<profiles>
-		<profile>
-			<id>ConfigurationApp</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>exec-maven-plugin</artifactId>
-						<executions>
-							<execution>
-								<goals>
-									<goal>java</goal>
-								</goals>
-							</execution>
-						</executions>
-						<configuration>
-							<mainClass>
-								de.adorsys.sts.keycloak.config.ConfigApp
-							</mainClass>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-
-		<profile>
-			<id>release</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-source-plugin</artifactId>
-						<version>2.2.1</version>
-						<executions>
-							<execution>
-								<id>attach-sources</id>
-								<goals>
-									<goal>jar-no-fork</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-gpg-plugin</artifactId>
-						<version>1.5</version>
-						<configuration>
-						</configuration>
-						<executions>
-							<execution>
-								<id>sign-artifacts</id>
-								<phase>verify</phase>
-								<goals>
-									<goal>sign</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-javadoc-plugin</artifactId>
-						<configuration>
-							<additionalparam>-Xdoclint:none</additionalparam>
-						</configuration>
-						<executions>
-							<execution>
-								<id>attach-javadocs</id>
-								<phase>package</phase>
-								<goals>
-									<goal>jar</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
-
-	<distributionManagement>
-		<repository>
-			<id>sonatype</id>
-			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
-		</repository>
-		<snapshotRepository>
-			<id>sonatype</id>
-			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
-		</snapshotRepository>
-	</distributionManagement>
 
 	<repositories>
 		<repository>

@@ -5,8 +5,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>de.adorsys.keycloak</groupId>
-        <artifactId>keycloak-tools</artifactId>
+        <groupId>com.github.borisskert</groupId>
+        <artifactId>keycloak-tool</artifactId>
         <version>0.9.0-SNAPSHOT</version>
     </parent>
 
