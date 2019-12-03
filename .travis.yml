@@ -1,7 +1,7 @@
 language: java
 
 jdk:
-  - oraclejdk8
+  - oraclejdk11
 
 services:
   - docker
@@ -15,11 +15,11 @@ cache:
     - $HOME/.m2
 
 script:
-  - mvn -Dkeycloak.version=$KEYCLOAK_VERSION --settings .travis/settings.xml clean verify -B -V
+  - mvn -Dkeycloak.version=$KEYCLOAK_VERSION clean verify -B -V
 
 before_deploy:
-  - mkdir -p config-cli/target/releases
-  - cp -a config-cli/target/config-cli.jar "config-cli/target/releases/config-cli-${KEYCLOAK_VERSION}.jar"
+  - mkdir -p ./releases
+  - cp -a config-cli/target/config-cli.jar "releases/config-cli-${KEYCLOAK_VERSION}.jar"
 
 deploy:
   - skip_cleanup: true
@@ -33,14 +33,13 @@ deploy:
   - skip_cleanup: true
     provider: releases
     api_key:
-      secure: iZ5A05+GBltcjgQFhOFh4hI3gbohtJ0gsAQXJSCSylDqgy9Sf0EprYWSzRxrJJTCGXdhYZHdSi2yNbEiUbzbLwQt78ACg7X3TqUdnTaa9hq8eaIaJab97x8C3zx3vXy51VP90gG7hGLqKOzXPRUpTxhmj4gLxcWktYQTlaMRgBvCuUt1GMGDynESlPaZDlx+/mWNAFOiSWBX5W4IvdOVN9Hhkn0prihCi3EcS1gNI2syd0KfsL+0fXf1hLYZNQiqC3Iejl36Dv7fZ3fzn/MINgiWFKJtaRY0GXPZfzUkYF2foNoXxCs9icyAE9gxFn87Ldo2HH8FStktQrdW27dbIJRBY0FNQyzz3QWLWexdpyyZTV1xhJnN/BQw/JxtB1kqzN4ypL50M3UNGz7/awBGI0qdss8ZZtGakMI2roc/8umeG6IKu+UtN1hQ55Ut3DX96uphreJfpP50JDowE7nmJBHkiSNAUcZPI+GuXCr4Npusx4WqtqxnXsfIu254HkZENV2kTXbw+kUkg0r7/wYLIVRMaSPkwLLfcU7PXjjJyb8B8vpu78SPjc5FDyBAWs06n1hOZa7qZ1q3kxEkdT7gPiO8TAPetDp2v9hOLfdxa0KsrlMPGZa3wseT9UkefhFbtFGOllprLfnYRwtq4OiOz9IucqKizluyAlC5U5M5urE=
-    file_glob: true
-    file: config-cli/target/releases/*
+      secure: FIuwkoSRs6i1yEoCoiRpMcY+IGhpL5VH8w5Dj9s/apSLSyIFqTH3MKBMHY8PLIfEBtBQelTmEzdEcccoKqpX2dm0ctisF0ozJLkSLeXUgRojMEW9YbRk5xtJ5BJzSuB7+XGP6uEqQk/n/R9w3oO3cIiyX9jks4dLYY6IjXD8ivNJbk7C6u0c1Hp44rRqf/yT4HxRgxv2pvatwY2nv82s3O+uE6FXddIZ0cPJm4kt7tIUT0ER6UdHzNKVvVHLKncwgsOEBk3sWyU1N9xXbCTAdy3T/ay3in7tQ4R4sWQAnx54dGU2c+uHmxVmbuGS398PFBCVveOWtNpEOWxdt/fPVqpliDwD/EbHRNbs1C/V/0tGxrGUb3flSSMa5hUhgJlaxA+jC1M3gRmVH56kcSzhV5zuuyzM3Wn+uqF3ZL/8+D0KKj/EDLt/UQwQ1/Lh5re+Fwetc8xxfQiraz2X+FbZUN94veARGu572ZhIgx7yKBxF/APf60yn2edlbeuv3NU6KL5+NUxFTCmjrWO9otx3kA7YH/5+TMUaKolk5l92kUUKGrZDp8q0XOMgFDrE6z1i+t+GcXfC3iCPoB1SSVxTVOgJ6dZXwPwYLfUzPQbMRMMWUv7tGnjNM1B4eqzJc53All/o58EYypTiwjuUL4nDj7Cl6/AlDzJdOaysm5guyyA=
+    file: releases/config-cli-${KEYCLOAK_VERSION}.jar
     on:
       tags: true
       # matches: vX.Y.Z, vX.Y.Z-A, vX.Y.Z-A-B.C.D, vX.Y.Z-A-B.C.D-E
       condition: "$TRAVIS_TAG =~ ^v([[:digit:]]+\\.)+[[:digit:]]+(-[[:digit:]]+)?(-([[:digit:]]+\\.)+[[:digit:]]+(-[[:digit:]]+)?)?$"
-      repo: adorsys/keycloak-config-cli
+      repo: borisskert/keycloak-tool
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
@@ -56,8 +55,10 @@ env:
     - KEYCLOAK_VERSION=6.0.1 IS_LATEST=false
     - KEYCLOAK_VERSION=7.0.0 IS_LATEST=true
   global:
-    - DOCKER_IMAGE_NAME=adorsys/keycloak-config-cli
-    # encrypted docker hub credentials
-    - secure: "j4b0nnUHM6qX6P3ThsaUsYuuacr4Vj+1Ab44cyaTEjxAfgwOziQ3R564pJGfA5p/M6/Ach8OFQzFSJzEHsTub+OD+vtkaKnYStRSkRdftSO/c6RyvI1zI8KmndR+iN/duIDUgUMiaetSuqQ2G2DCIjS54qPOPNwDfSdPM7y2e/7dNMKqUfxXVlt8MDiy/d0gpi6+P0ELMwiRfxJToGyLN/Z9vhJfZR+heU1KN3JGmwjd9tC1ZdbfqsqqU7HwGJCUu3VZZ+5k1Yw3GJSNoD9ySsBtQk+qeH6sh1ww+19zITJn7hDUxQGVjaiaOm2Le3Jn6P5kcHWESnv9dGSiOQTsTXadtdeLZ7N7mdRwR0u+wQNoH998Q4FVhsLb1VqhwxEE0PO1nvd0RZRvtpOfkQS1wocr6NIyS2m/f9IZWgfswFeqk/m0tDG+ZA5XG2QJFSRj6Gy+Hj5Xe7vRr1F9QhOTuhGl+8uWgRpxCOFzxg5bDfQRk2LBhAWIb9NHxlCkmiKP/3ak8rs9TrHeIm5IBGyDcZJcft1d0czgmP+wRiRQm0/7xTjwQSdZsPrFrw6+HSMDsVcJ314msvV/hLLIuRXbYOjM8JOtRFcWYqTGSI4zRNuqS3wjdpf+1VSN4rNWJYNx8mEtcA1P+zK6V1cLTmIZPMaiNtb/Nl08l8TMZjd99Jc="
+    - DOCKER_IMAGE_NAME=borisskert/keycloak-tool
+    # export DOCKER_HUB_USER=[secure]
+    - secure: "Jq9mcMREaYtnc57WeGlu3VplZPnfLb+y1XDIg2XTpzgtjWrhKQ+PJzX/LeJK0xi0Xqv2hM/h96lcrL+8p+58Ab8qJfLw44ZezEj28ubYHPt5ALVlbvzjMzOfCunx4luJxUb9cRZtnln7SpDnoCCf7kFiHSzXKtf1sO5ySOz7hc8hHcY5Ls5VDM/zuEmqunYY8LsdaLLV4gkxhsJc3JHlnvc+Xb2mlZYIbCJRN4c6klIhLIP0HjakPLXXrl/nqyxNOQmWTLRhzzsjgQwIlHgRWnKmbhLB5uVq0sy2ppsrPmri31XTbLe5ApS2H158d2Cc59obAa7e90cd0e7wZt1jRQMQBe1SyFXnf3+t8lG4wAi7g7M+yqNXNsp5xuciRmhf3DaylEfYqfNC6Rgaeyf3/4q+THH5lPDNQVG85DR9AzFq6BKPA1ywL3L8mrQH5bPaQvO+vwjdRyDLqCn5SPI8BzPNhN4Q1LsQL8K7ik45W3oaveFRjNES4cEJzRJTvnmtGcA+BkqidmdbfM6AJKHe1iBIfXRJ1ucXLIZ6LGMjuWp6vMrEZSmijPtqOVx5ozbH9cyn2Mxo57N66YvLxrVYGND94kzS3DFyU0zLgHUxEqsqhtyL6JF4ahr3HWA209BwMG2RfzJmWRYp8yi7XbNOvZ+8FmgexKKftg4TtGif4qE="
+    # export DOCKER_HUB_PASSWORD=[secure]
+    - secure: "DQSr3hcutPB5hWIG5YZW2Ogk2PRyQWL/Vu6cP6G6yyk4nigFdlkChxtkRYeDM5+hmbo/CL5x6Tq2Ynt0ESumE+4W9G7C3jpjgXcdrv79MMBPEEQmxZm+0gf5eQaYdQcUOWA3Enmik7HqdTlsn14SiqDwgI7KXqybCzOSWBHctzSwJdkjsNh0jJZm7Pmg8ouZIZOBcYnd48550arFcZWJj/sXC5HMhAc4bXcUwtzusapWQMqN8l6jqGzvTWJCxfhq0O2ZnNU8M2ZgFBwWquNgZ5pKrxRIlgGUDifu1dLMTQ2Bh5DDa217Kt+PwcGBZ56SRkx0l8M28gSxO5dyQW9CTEcsMEvHci/aZEUxDAmvTRG6bMngevhFl5qheu+WsguaMp8oPDsgqgkifuBIz7N+NgMmnJjRDQvq5iDN9ivEbhGUmqA3WBQ90aeJ3mVoh79vh9l5qZOym7rQ4D2wceNK78+M6T5YUNZ1chRZpSA3oU+/bIYXPMfncW08HiZX/ZG17hcgwZDwCmtIF8ewJX0BktJEDhSfPDFLZOHB5XfUA/bNC3MgAITB/cfiLABGKPQJF51Ba+ZkNUDD+IIJH3koDgd+Gmx2yRqLzcnJOKQwxaneGi21VuF3L08nzNeB7ctwpLwr77e9IgT/dB0wu7MQ9JF0RTEGa6FbT5QJ5kq4SeM="
     # export CODECOV_TOKEN=[secure]
-    - secure: "tJ9tcGFcFP9pl5eZghw2T1njxxsBg2iwyp/qAaFDlpIvDuT8lSWqriXi/Ymwl6NyihY6drOmMrjgwz8dHcUyO+6c9KfDE07SqkKgeU/16XUmH6WKvamcwoNTDO4EltVb/X3DmYkJ4ixFgJdQzqhN5MAh6GudmL+19bP9es+K2TeDTfrTCSFLYlTuhCwBbngHJOVOkosD6rq/sxbQqlKbDkLakunwcqeJel7xRd3SKlkv0t5sc44c1KTFBNbO+x3QdkRCMLur2gBKdgSWb8O4CumwqR3XmjdaHO2EqwGvQVUjYSlUxrQpXV+ZWAVaHrkK+xOGl5XOTlRlOo+5Wtn/mXYjUMs+hdLRqWpLADzZ36nVH/PzFtiAdENtS5K6bPuqTkiQrqlCaTyEU7hUd52v0CQKv/J7yKmenp+3JiPyF+oz81HSK0IvwmUZL70qlc7A9uujnFHF4aiUGoysOdyY3Cq+jR8J3Z+aI1pgcBGSsyrA0Eo5u0WtSfGO4gAtx8geGO5Bg4Sg0NozB08dOvIySLr5SYL3t/WAZM1Ku2zr1WK0Xlfhmfs5L+Z7NDnQps9+r3ZgXm+aIVzRuGyPttEiqclOcnlRgG4yi+eUn9oD8p2huTKuSgpH8fB2fOAuU/WIkgCKeZpgmS7yXm3WNPaN9xo+kMLpQPYG+oKPAovwn70="
+    - secure: "Xa9aIwZfh0VQyJf7xRyUjoV3rFLVSPsnnY40peDslU76fuFfr5GyGqDiB33XRt3Y626aNAk+lil9/JXV1WDqXKR01bjbc3P43Z4MRhZtQBMTASdKKMrGOjGQ1y78HSNEMu2iJNW5a/mywjL7eQK5kWC/a8DsWPY06eUhCJMyksLQxoHDIpmnmjWB8DbCMillHRhzMl415Q5/ZLa3rkiWERv0pdzRbPBR0o4f+WX00Jc4RhNblyp454dSCxr/Bdct9NZawnE+dKGSBHYI6umk9TVSSx/ISih9Bx01AKd83xawS2Ee/KWZS6kyWLzgxy4H+hZKfjcWJQpZYqvTWwleu8ddP6TPRyraSL18wMKA3Q/4Q0cHGW6IpbK7sL0/xCZpgZfxelIdj+XiOaVhpfT4W4WhMZIe1SFpv1aWEx6mGzTRNcbQ3cRsp35ihk+Qxb35PEeTTNkReOURNdNhwPPTlrhJH6zLaAHqqdGNxtllT75ebv7gvsDsrK9DxgTg8zd5g/DICa/DufvxDHawBi6tijwrGqlySZ6SiRBZRMKPQfRvs8UyGVsFP8rrjNjWwO3q7tNgOJ8usaRun92hoZKgpv7UKchj+g2SmOyw3l1ZaqXxoAK4SbFenn8WdOeu5EHDE1RWy5LxLIzGQJVZprMoqrhR4LMJCIs05a2LvNI5678="
