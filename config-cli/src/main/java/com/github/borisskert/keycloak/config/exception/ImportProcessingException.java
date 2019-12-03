@@ -1,4 +1,4 @@
-package de.adorsys.keycloak.config.exception;
+package com.github.borisskert.keycloak.config.exception;
 
 public class ImportProcessingException extends RuntimeException {
     public ImportProcessingException(String message) {

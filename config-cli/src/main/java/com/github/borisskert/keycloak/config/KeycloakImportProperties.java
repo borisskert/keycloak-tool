@@ -1,4 +1,4 @@
-package de.adorsys.keycloak.config;
+package com.github.borisskert.keycloak.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;

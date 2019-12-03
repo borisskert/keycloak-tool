@@ -1,7 +1,7 @@
-package de.adorsys.keycloak.config.repository;
+package com.github.borisskert.keycloak.config.repository;
 
-import de.adorsys.keycloak.config.exception.KeycloakRepositoryException;
-import de.adorsys.keycloak.config.util.ResponseUtil;
+import com.github.borisskert.keycloak.config.exception.KeycloakRepositoryException;
+import com.github.borisskert.keycloak.config.util.ResponseUtil;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.admin.client.resource.UsersResource;

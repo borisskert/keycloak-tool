@@ -1,11 +1,10 @@
-package de.adorsys.keycloak.config.service;
+package com.github.borisskert.keycloak.config.service;
 
-import de.adorsys.keycloak.config.exception.ImportProcessingException;
-import de.adorsys.keycloak.config.exception.InvalidImportException;
-import de.adorsys.keycloak.config.model.RealmImport;
-import de.adorsys.keycloak.config.repository.AuthenticationFlowRepository;
-import de.adorsys.keycloak.config.repository.ExecutionFlowRepository;
-import de.adorsys.keycloak.config.util.CloneUtils;
+import com.github.borisskert.keycloak.config.exception.InvalidImportException;
+import com.github.borisskert.keycloak.config.repository.AuthenticationFlowRepository;
+import com.github.borisskert.keycloak.config.repository.ExecutionFlowRepository;
+import com.github.borisskert.keycloak.config.model.RealmImport;
+import com.github.borisskert.keycloak.config.util.CloneUtils;
 import org.keycloak.representations.idm.AuthenticationExecutionInfoRepresentation;
 import org.keycloak.representations.idm.AuthenticationFlowRepresentation;
 import org.slf4j.Logger;

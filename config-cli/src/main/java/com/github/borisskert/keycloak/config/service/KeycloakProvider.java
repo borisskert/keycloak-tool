@@ -1,6 +1,6 @@
-package de.adorsys.keycloak.config.service;
+package com.github.borisskert.keycloak.config.service;
 
-import de.adorsys.keycloak.config.KeycloakImportProperties;
+import com.github.borisskert.keycloak.config.KeycloakImportProperties;
 import org.apache.http.client.utils.URIBuilder;
 import org.keycloak.admin.client.Keycloak;
 import org.springframework.beans.factory.annotation.Autowired;

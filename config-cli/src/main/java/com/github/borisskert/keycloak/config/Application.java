@@ -1,4 +1,4 @@
-package de.adorsys.keycloak.config;
+package com.github.borisskert.keycloak.config;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

@@ -1,6 +1,6 @@
-package de.adorsys.keycloak.config.util;
+package com.github.borisskert.keycloak.config.util;
 
-import de.adorsys.keycloak.config.service.KeycloakProvider;
+import com.github.borisskert.keycloak.config.service.KeycloakProvider;
 import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
@@ -8,7 +8,6 @@ import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;

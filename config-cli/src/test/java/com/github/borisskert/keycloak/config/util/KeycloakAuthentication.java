@@ -1,7 +1,7 @@
-package de.adorsys.keycloak.config.util;
+package com.github.borisskert.keycloak.config.util;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import de.adorsys.keycloak.config.KeycloakImportProperties;
+import com.github.borisskert.keycloak.config.KeycloakImportProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;

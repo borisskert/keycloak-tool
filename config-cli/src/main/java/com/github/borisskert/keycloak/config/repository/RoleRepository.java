@@ -1,6 +1,6 @@
-package de.adorsys.keycloak.config.repository;
+package com.github.borisskert.keycloak.config.repository;
 
-import de.adorsys.keycloak.config.exception.KeycloakRepositoryException;
+import com.github.borisskert.keycloak.config.exception.KeycloakRepositoryException;
 import org.keycloak.admin.client.resource.*;
 import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;

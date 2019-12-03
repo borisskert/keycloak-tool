@@ -1,9 +1,9 @@
-package de.adorsys.keycloak.config.service;
+package com.github.borisskert.keycloak.config.service;
 
-import de.adorsys.keycloak.config.exception.ImportProcessingException;
-import de.adorsys.keycloak.config.exception.KeycloakRepositoryException;
-import de.adorsys.keycloak.config.model.RealmImport;
-import de.adorsys.keycloak.config.repository.ExecutionFlowRepository;
+import com.github.borisskert.keycloak.config.exception.ImportProcessingException;
+import com.github.borisskert.keycloak.config.exception.KeycloakRepositoryException;
+import com.github.borisskert.keycloak.config.repository.ExecutionFlowRepository;
+import com.github.borisskert.keycloak.config.model.RealmImport;
 import org.keycloak.representations.idm.AuthenticationExecutionExportRepresentation;
 import org.keycloak.representations.idm.AuthenticationExecutionInfoRepresentation;
 import org.keycloak.representations.idm.AuthenticationExecutionRepresentation;

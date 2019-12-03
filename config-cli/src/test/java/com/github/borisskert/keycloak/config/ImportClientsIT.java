@@ -1,13 +1,13 @@
-package de.adorsys.keycloak.config;
+package com.github.borisskert.keycloak.config;
 
-import de.adorsys.keycloak.config.configuration.TestConfiguration;
-import de.adorsys.keycloak.config.model.KeycloakImport;
-import de.adorsys.keycloak.config.model.RealmImport;
-import de.adorsys.keycloak.config.service.KeycloakImportProvider;
-import de.adorsys.keycloak.config.service.KeycloakProvider;
-import de.adorsys.keycloak.config.service.RealmImportService;
-import de.adorsys.keycloak.config.util.KeycloakRepository;
-import de.adorsys.keycloak.config.util.ResourceLoader;
+import com.github.borisskert.keycloak.config.configuration.TestConfiguration;
+import com.github.borisskert.keycloak.config.util.KeycloakRepository;
+import com.github.borisskert.keycloak.config.util.ResourceLoader;
+import com.github.borisskert.keycloak.config.model.KeycloakImport;
+import com.github.borisskert.keycloak.config.model.RealmImport;
+import com.github.borisskert.keycloak.config.service.KeycloakImportProvider;
+import com.github.borisskert.keycloak.config.service.KeycloakProvider;
+import com.github.borisskert.keycloak.config.service.RealmImportService;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,7 +23,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.File;
-import java.util.List;
 import java.util.Map;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;

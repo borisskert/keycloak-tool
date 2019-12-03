@@ -1,12 +1,12 @@
-package de.adorsys.keycloak.config;
+package com.github.borisskert.keycloak.config;
 
-import de.adorsys.keycloak.config.configuration.TestConfiguration;
-import de.adorsys.keycloak.config.model.KeycloakImport;
-import de.adorsys.keycloak.config.model.RealmImport;
-import de.adorsys.keycloak.config.service.KeycloakImportProvider;
-import de.adorsys.keycloak.config.service.KeycloakProvider;
-import de.adorsys.keycloak.config.service.RealmImportService;
-import de.adorsys.keycloak.config.util.ResourceLoader;
+import com.github.borisskert.keycloak.config.configuration.TestConfiguration;
+import com.github.borisskert.keycloak.config.util.ResourceLoader;
+import com.github.borisskert.keycloak.config.model.KeycloakImport;
+import com.github.borisskert.keycloak.config.model.RealmImport;
+import com.github.borisskert.keycloak.config.service.KeycloakImportProvider;
+import com.github.borisskert.keycloak.config.service.KeycloakProvider;
+import com.github.borisskert.keycloak.config.service.RealmImportService;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,7 +20,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.*;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -83,7 +82,7 @@ public class ImportExportedRealmIT {
         assertThat(updatedRealm.isEnabled(), is(true));
         assertThat(updatedRealm.getLoginTheme(), is(nullValue()));
         assertThat(
-                updatedRealm.getAttributes().get("de.adorsys.keycloak.config.import-checksum"),
+                updatedRealm.getAttributes().get("com.github.borisskert.keycloak.config.import-checksum"),
                 is(expectedImportFileChecksum(keycloakVersion))
         );
     }

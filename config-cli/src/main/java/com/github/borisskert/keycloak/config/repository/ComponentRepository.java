@@ -1,8 +1,8 @@
-package de.adorsys.keycloak.config.repository;
+package com.github.borisskert.keycloak.config.repository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.adorsys.keycloak.config.exception.KeycloakRepositoryException;
-import de.adorsys.keycloak.config.util.ResponseUtil;
+import com.github.borisskert.keycloak.config.exception.KeycloakRepositoryException;
+import com.github.borisskert.keycloak.config.util.ResponseUtil;
 import org.apache.logging.log4j.util.Strings;
 import org.keycloak.admin.client.resource.ComponentResource;
 import org.keycloak.admin.client.resource.RealmResource;

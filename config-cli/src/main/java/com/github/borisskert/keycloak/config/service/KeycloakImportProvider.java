@@ -1,10 +1,10 @@
-package de.adorsys.keycloak.config.service;
+package com.github.borisskert.keycloak.config.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.adorsys.keycloak.config.exception.InvalidImportException;
-import de.adorsys.keycloak.config.model.KeycloakImport;
-import de.adorsys.keycloak.config.model.RealmImport;
-import de.adorsys.keycloak.config.service.checksum.ChecksumService;
+import com.github.borisskert.keycloak.config.exception.InvalidImportException;
+import com.github.borisskert.keycloak.config.model.KeycloakImport;
+import com.github.borisskert.keycloak.config.model.RealmImport;
+import com.github.borisskert.keycloak.config.service.checksum.ChecksumService;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;

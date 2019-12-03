@@ -1,4 +1,4 @@
-package de.adorsys.keycloak.config.model;
+package com.github.borisskert.keycloak.config.model;
 
 import java.util.Map;
 

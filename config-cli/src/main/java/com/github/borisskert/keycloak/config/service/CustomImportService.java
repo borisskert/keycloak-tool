@@ -1,7 +1,7 @@
-package de.adorsys.keycloak.config.service;
+package com.github.borisskert.keycloak.config.service;
 
-import de.adorsys.keycloak.config.model.RealmImport;
-import de.adorsys.keycloak.config.repository.ClientRepository;
+import com.github.borisskert.keycloak.config.repository.ClientRepository;
+import com.github.borisskert.keycloak.config.model.RealmImport;
 import org.keycloak.admin.client.resource.ClientResource;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.admin.client.resource.RoleResource;
@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class CustomImportService {

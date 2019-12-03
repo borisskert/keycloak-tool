@@ -1,9 +1,9 @@
-package de.adorsys.keycloak.config.service;
+package com.github.borisskert.keycloak.config.service;
 
-import de.adorsys.keycloak.config.exception.InvalidImportException;
-import de.adorsys.keycloak.config.model.RealmImport;
-import de.adorsys.keycloak.config.repository.RequiredActionRepository;
-import de.adorsys.keycloak.config.util.CloneUtils;
+import com.github.borisskert.keycloak.config.exception.InvalidImportException;
+import com.github.borisskert.keycloak.config.repository.RequiredActionRepository;
+import com.github.borisskert.keycloak.config.model.RealmImport;
+import com.github.borisskert.keycloak.config.util.CloneUtils;
 import org.keycloak.representations.idm.RequiredActionProviderRepresentation;
 import org.keycloak.representations.idm.RequiredActionProviderSimpleRepresentation;
 import org.slf4j.Logger;

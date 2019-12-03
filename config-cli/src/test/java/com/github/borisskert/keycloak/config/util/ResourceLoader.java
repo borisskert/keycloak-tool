@@ -1,4 +1,4 @@
-package de.adorsys.keycloak.config.util;
+package com.github.borisskert.keycloak.config.util;
 
 import java.io.File;
 import java.net.MalformedURLException;

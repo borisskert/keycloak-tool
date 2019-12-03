@@ -1,8 +1,8 @@
-package de.adorsys.keycloak.config.service;
+package com.github.borisskert.keycloak.config.service;
 
-import de.adorsys.keycloak.config.model.RealmImport;
-import de.adorsys.keycloak.config.repository.AuthenticationFlowRepository;
-import de.adorsys.keycloak.config.repository.RealmRepository;
+import com.github.borisskert.keycloak.config.model.RealmImport;
+import com.github.borisskert.keycloak.config.repository.AuthenticationFlowRepository;
+import com.github.borisskert.keycloak.config.repository.RealmRepository;
 import org.apache.logging.log4j.util.Strings;
 import org.keycloak.representations.idm.AuthenticationFlowRepresentation;
 import org.keycloak.representations.idm.RealmRepresentation;

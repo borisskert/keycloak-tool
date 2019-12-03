@@ -1,4 +1,4 @@
-package de.adorsys.keycloak.config.util;
+package com.github.borisskert.keycloak.config.util;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonProcessingException;

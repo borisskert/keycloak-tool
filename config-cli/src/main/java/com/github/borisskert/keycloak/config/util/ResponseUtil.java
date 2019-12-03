@@ -1,6 +1,6 @@
-package de.adorsys.keycloak.config.util;
+package com.github.borisskert.keycloak.config.util;
 
-import de.adorsys.keycloak.config.exception.KeycloakRepositoryException;
+import com.github.borisskert.keycloak.config.exception.KeycloakRepositoryException;
 
 import javax.ws.rs.core.Response;
 

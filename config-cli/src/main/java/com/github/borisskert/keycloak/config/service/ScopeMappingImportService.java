@@ -1,8 +1,8 @@
-package de.adorsys.keycloak.config.service;
+package com.github.borisskert.keycloak.config.service;
 
-import de.adorsys.keycloak.config.model.RealmImport;
-import de.adorsys.keycloak.config.repository.RealmRepository;
-import de.adorsys.keycloak.config.repository.ScopeMappingRepository;
+import com.github.borisskert.keycloak.config.model.RealmImport;
+import com.github.borisskert.keycloak.config.repository.RealmRepository;
+import com.github.borisskert.keycloak.config.repository.ScopeMappingRepository;
 import org.keycloak.representations.idm.RealmRepresentation;
 import org.keycloak.representations.idm.ScopeMappingRepresentation;
 import org.slf4j.Logger;

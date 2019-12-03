@@ -1,8 +1,8 @@
-package de.adorsys.keycloak.config.service;
+package com.github.borisskert.keycloak.config.service;
 
-import de.adorsys.keycloak.config.model.RealmImport;
-import de.adorsys.keycloak.config.repository.RealmRepository;
-import de.adorsys.keycloak.config.util.CloneUtils;
+import com.github.borisskert.keycloak.config.repository.RealmRepository;
+import com.github.borisskert.keycloak.config.model.RealmImport;
+import com.github.borisskert.keycloak.config.util.CloneUtils;
 import org.keycloak.representations.idm.RealmRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.slf4j.Logger;
@@ -18,7 +18,7 @@ import java.util.Map;
 public class RealmImportService {
     private static final Logger logger = LoggerFactory.getLogger(RealmImportService.class);
 
-    private static final String REALM_CHECKSUM_ATTRIBUTE_KEY = "de.adorsys.keycloak.config.import-checksum";
+    private static final String REALM_CHECKSUM_ATTRIBUTE_KEY = "com.github.borisskert.keycloak.config.import-checksum";
 
     private final String[] ignoredPropertiesForCreation = new String[]{
             "users",

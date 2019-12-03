@@ -1,4 +1,4 @@
-package de.adorsys.keycloak.config.service.checksum;
+package com.github.borisskert.keycloak.config.service.checksum;
 
 import org.junit.Assert;
 import org.junit.Before;

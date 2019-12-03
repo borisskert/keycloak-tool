@@ -1,4 +1,4 @@
-package de.adorsys.keycloak.config.model;
+package com.github.borisskert.keycloak.config.model;
 
 import org.keycloak.representations.idm.AuthenticationExecutionExportRepresentation;
 import org.keycloak.representations.idm.AuthenticationFlowRepresentation;

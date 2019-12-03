@@ -1,4 +1,4 @@
-package de.adorsys.keycloak.config.repository;
+package com.github.borisskert.keycloak.config.repository;
 
 import org.keycloak.admin.client.resource.AuthenticationManagementResource;
 import org.keycloak.representations.idm.RequiredActionProviderRepresentation;
