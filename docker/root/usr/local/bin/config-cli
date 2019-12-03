@@ -21,7 +21,7 @@ fi
 
 
 echo 'wait until keycloak is available'
-sh wtfc -T ${WAIT_TIME_IN_SECONDS:-120} -S 0 -I 2 curl -f ${KEYCLOAK_URL}
+wtfc -T ${WAIT_TIME_IN_SECONDS:-120} -S 0 -I 2 curl -f ${KEYCLOAK_URL}
 
 
 $JAVA_HOME/bin/java $JAVA_OPTS -jar ./keycloak-config-cli.jar \
