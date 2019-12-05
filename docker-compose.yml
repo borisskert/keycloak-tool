@@ -14,7 +14,7 @@ services:
     - "--debug"
   post_process:
     build: .
-    image: adorsys.de/keycloak-config-cli:latest
+    image: borisskert/keycloak-tool:latest
     depends_on:
     - keycloak
     links:

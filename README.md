@@ -1,4 +1,8 @@
-[![Build Status](https://travis-ci.com/adorsys/keycloak-config-cli.svg?branch=master)](https://travis-ci.com/adorsys/keycloak-config-cli) [![Maintainability](https://api.codeclimate.com/v1/badges/bd89704bfacbe1fcd215/maintainability)](https://codeclimate.com/github/adorsys/keycloak-config-cli/maintainability) [![codecov](https://codecov.io/gh/adorsys/keycloak-config-cli/branch/master/graph/badge.svg)](https://codecov.io/gh/adorsys/keycloak-config-cli)
+[![Build Status](https://travis-ci.com/borisskert/keycloak-tool.svg?branch=master)](https://travis-ci.com/borisskert/keycloak-tool)
+[![Maintainability](https://api.codeclimate.com/v1/badges/069a00d89c0b36a2f820/maintainability)](https://codeclimate.com/github/borisskert/keycloak-tool/maintainability) 
+[![codecov](https://codecov.io/gh/borisskert/keycloak-tool/branch/master/graph/badge.svg)](https://codecov.io/gh/borisskert/keycloak-tool)
+
+
 # keycloak-tools
 
 This project contains tools used to automate keycloak's deployment process.
@@ -68,7 +72,7 @@ $ docker run -e KEYCLOAK_URL=http://<your keycloak host>:8080 \
              -e WAIT_TIME_IN_SECONDS=120 \
              -e IMPORT_FORCE=false \
              -v <your config path>:/tmp/keycloak-config-cli/configs \
-             adorsys/keycloak-config-cli:latest \
+             borisskert/keycloak-tool:latest \
              config-cli
 ```
 
@@ -91,7 +95,7 @@ services:
     - "0.0.0.0"
     - "--debug"
   keycloak_config:
-    image: adorsys/keycloak-config-cli:latest
+    image: borisskert/keycloak-tool:latest
     depends_on:
     - keycloak
     links:
