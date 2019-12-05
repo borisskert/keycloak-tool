@@ -46,14 +46,7 @@ after_success:
 
 env:
   matrix:
-    - KEYCLOAK_VERSION=4.4.0.Final IS_LATEST=false
-    - KEYCLOAK_VERSION=4.5.0.Final IS_LATEST=false
-    - KEYCLOAK_VERSION=4.6.0.Final IS_LATEST=false
-    - KEYCLOAK_VERSION=4.7.0.Final IS_LATEST=false
-    - KEYCLOAK_VERSION=4.8.3.Final IS_LATEST=false
-    - KEYCLOAK_VERSION=5.0.0 IS_LATEST=false
-    - KEYCLOAK_VERSION=6.0.1 IS_LATEST=false
-    - KEYCLOAK_VERSION=7.0.0 IS_LATEST=true
+    - KEYCLOAK_VERSION=8.0.1 IS_LATEST=true
   global:
     - DOCKER_IMAGE_NAME=borisskert/keycloak-tool
     # export DOCKER_HUB_USER=[secure]

@@ -603,7 +603,7 @@ public class ImportAuthenticationFlowsIT {
 
         execution = getExecutionFromFlow(nonTopLevelFlow, "auth-otp-form");
         assertThat(execution.getAuthenticator(), is("auth-otp-form"));
-        assertThat(execution.getRequirement(), is("OPTIONAL"));
+        assertThat(execution.getRequirement(), is("CONDITIONAL"));
         assertThat(execution.getPriority(), is(1));
         assertThat(execution.isAutheticatorFlow(), is(false));
     }
