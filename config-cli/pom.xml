@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.github.borisskert</groupId>
         <artifactId>keycloak-tool</artifactId>
-        <version>0.10.0</version>
+        <version>0.11.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>config-cli</artifactId>
