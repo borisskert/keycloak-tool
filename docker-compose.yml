@@ -14,13 +14,13 @@ services:
     - "--debug"
   post_process:
     build: .
-    image: adorsys.de/keycloak-config-cli:latest
+    image: borisskert/keycloak-tool:latest
     depends_on:
     - keycloak
     links:
     - keycloak
     volumes:
-    - ./example-config:/tmp/keycloak-config-cli/configs
+    - ./example-config:/tmp/keycloak-tool/configs
     environment:
     - KEYCLOAK_URL=http://keycloak:8080
     - KEYCLOAK_ADMIN=admin

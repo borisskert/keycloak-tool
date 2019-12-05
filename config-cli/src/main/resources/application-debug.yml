@@ -1,12 +1,12 @@
 logging:
   level:
-    de.adorsys.keycloak.config.service.RealmImportService: debug
-    de.adorsys.keycloak.config.service.AuthenticationFlowsImportService: debug
-    de.adorsys.keycloak.config.service.ExecutionFlowsImportService: debug
-    de.adorsys.keycloak.config.service.RequiredActionsImportService: debug
-    de.adorsys.keycloak.config.service.ComponentImportService: debug
-    de.adorsys.keycloak.config.service.UserImportService: debug
-    de.adorsys.keycloak.config.service.CustomImportService: debug
-    de.adorsys.keycloak.config.service.RoleImportService: debug
-    de.adorsys.keycloak.config.service.ClientImportService: debug
-    de.adorsys.keycloak.config.service.ScopeMappingImportService: debug
+    com.github.borisskert.keycloak.config.service.RealmImportService: debug
+    com.github.borisskert.keycloak.config.service.AuthenticationFlowsImportService: debug
+    com.github.borisskert.keycloak.config.service.ExecutionFlowsImportService: debug
+    com.github.borisskert.keycloak.config.service.RequiredActionsImportService: debug
+    com.github.borisskert.keycloak.config.service.ComponentImportService: debug
+    com.github.borisskert.keycloak.config.service.UserImportService: debug
+    com.github.borisskert.keycloak.config.service.CustomImportService: debug
+    com.github.borisskert.keycloak.config.service.RoleImportService: debug
+    com.github.borisskert.keycloak.config.service.ClientImportService: debug
+    com.github.borisskert.keycloak.config.service.ScopeMappingImportService: debug
