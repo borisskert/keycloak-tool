@@ -13,10 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.ws.rs.core.Response;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -186,17 +183,43 @@ public class GroupRepository {
         return groups.stream().anyMatch(g -> Objects.equals(g.getName(), groupName));
     }
 
+    private boolean hasRealmRoleWithName(List<RoleRepresentation> roles, String roleName) {
+        return roles.stream().anyMatch(g -> Objects.equals(g.getName(), roleName));
+    }
+
     private void updateGroupRealmRoles(String realm, String groupId, List<String> realmRoles) {
         GroupResource groupResource = loadGroupById(realm, groupId);
+        GroupRepresentation group = groupResource.toRepresentation();
+
+        List<String> existingRealmRolesNames = group.getRealmRoles();
+        List<String> realmRoleNamesToAdd = new ArrayList<>();
+        List<String> realmRoleNamesToRemove = new ArrayList<>();
+
+        for (String realmRoleName : realmRoles) {
+            if (!existingRealmRolesNames.contains(realmRoleName)) {
+                realmRoleNamesToAdd.add(realmRoleName);
+            }
+        }
+
+        for (String existingRealmRolesName : existingRealmRolesNames) {
+            if (!realmRoles.contains(existingRealmRolesName)) {
+                realmRoleNamesToRemove.add(existingRealmRolesName);
+            }
+        }
 
         RoleMappingResource groupRoles = groupResource.roles();
         RoleScopeResource groupRealmRoles = groupRoles.realmLevel();
-
-        List<RoleRepresentation> existingRealmRoles = realmRoles.stream()
-                .map(realmRole -> roleRepository.findRealmRole(realm, realmRole))
+        List<RoleRepresentation> realmRoleToAdd = realmRoleNamesToAdd.stream()
+                .map(name -> roleRepository.findRealmRole(realm, name))
                 .collect(Collectors.toList());
 
-        groupRealmRoles.add(existingRealmRoles);
+        groupRealmRoles.add(realmRoleToAdd);
+
+        List<RoleRepresentation> realmRoleToRemove = realmRoleNamesToRemove.stream()
+                .map(name -> roleRepository.findRealmRole(realm, name))
+                .collect(Collectors.toList());
+
+        groupRealmRoles.remove(realmRoleToRemove);
     }
 
     private void updateGroupClientRoles(String realm, String groupId, Map<String, List<String>> groupClientRoles) {
