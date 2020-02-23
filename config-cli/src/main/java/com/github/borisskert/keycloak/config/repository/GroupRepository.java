@@ -57,6 +57,14 @@ public class GroupRepository {
         addGroupRealmRoles(realm, group);
 
         addClientRoles(realm, group);
+
+        List<GroupRepresentation> subGroups = group.getSubGroups();
+        if(subGroups != null && !subGroups.isEmpty()) {
+            for (GroupRepresentation subGroup : subGroups) {
+                GroupResource groupResource = loadGroupByPath(realm, group.getPath());
+                groupResource.subGroup(subGroup);
+            }
+        }
     }
 
     private void addClientRoles(String realm, GroupRepresentation group) {
