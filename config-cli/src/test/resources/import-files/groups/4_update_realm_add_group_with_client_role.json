@@ -3,16 +3,13 @@
   "realm": "realmWithGroups",
   "groups": [
     {
-      "name": "My Group",
-      "path": "/My Group"
+      "name": "My Group"
     },
     {
-      "name": "My Added Group",
-      "path": "/My Added Group"
+      "name": "My Added Group"
     },
     {
       "name": "Group with attribute",
-      "path": "/Group with attribute",
       "attributes": {
         "my attribute": [
           "my attribute value"
@@ -21,14 +18,12 @@
     },
     {
       "name": "Group with realm role",
-      "path": "/Group with realm role",
       "realmRoles": [
         "my_realm_role"
       ]
     },
     {
       "name": "Group with client role",
-      "path": "/Group with client role",
       "clientRoles": {
         "moped-client": [
           "my_client_role"

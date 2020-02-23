@@ -37,6 +37,17 @@
           "name": "My SubGroup"
         }
       ]
+    },
+    {
+      "name": "Group with subgroup with realm role",
+      "subGroups": [
+        {
+          "name": "My SubGroup",
+          "realmRoles": [
+            "my_second_realm_role"
+          ]
+        }
+      ]
     }
   ],
   "roles": {
@@ -44,6 +55,11 @@
       {
         "name": "my_realm_role",
         "description": "My realm role",
+        "composite": false,
+        "clientRole": false
+      }, {
+        "name": "my_second_realm_role",
+        "description": "My second realm role",
         "composite": false,
         "clientRole": false
       }

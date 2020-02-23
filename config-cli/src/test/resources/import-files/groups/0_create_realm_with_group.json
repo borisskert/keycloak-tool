@@ -3,8 +3,7 @@
   "realm": "realmWithGroups",
   "groups": [
     {
-      "name": "My Group",
-      "path": "/My Group"
+      "name": "My Group"
     }
   ]
 }

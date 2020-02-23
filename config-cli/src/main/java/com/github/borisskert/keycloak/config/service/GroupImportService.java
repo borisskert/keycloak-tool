@@ -33,14 +33,14 @@ public class GroupImportService {
     }
 
     private void createOrUpdateRealmGroup(String realm, GroupRepresentation group) {
-        String groupPath = group.getPath();
+        String groupName = group.getName();
 
-        Optional<GroupRepresentation> maybeGroup = groupRepository.tryToFindGroup(realm, groupPath);
+        Optional<GroupRepresentation> maybeGroup = groupRepository.tryToFindGroupByName(realm, groupName);
 
         if (maybeGroup.isPresent()) {
-            logger.debug("Update group '{}' in realm '{}'", groupPath, realm);
+            logger.debug("Update group '{}' in realm '{}'", groupName, realm);
         } else {
-            logger.debug("Create group '{}' in realm '{}'", groupPath, realm);
+            logger.debug("Create group '{}' in realm '{}'", groupName, realm);
             groupRepository.createGroup(realm, group);
         }
     }

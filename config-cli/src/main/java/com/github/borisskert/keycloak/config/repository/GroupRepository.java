@@ -37,13 +37,23 @@ public class GroupRepository {
         this.clientRepository = clientRepository;
     }
 
-    public Optional<GroupRepresentation> tryToFindGroup(String realm, String groupPath) {
+    public Optional<GroupRepresentation> tryToFindGroupByPath(String realm, String groupPath) {
         GroupsResource groupsResource = realmRepository.loadRealm(realm)
                 .groups();
 
         return groupsResource.groups()
                 .stream()
                 .filter(g -> Objects.equals(g.getPath(), groupPath))
+                .findFirst();
+    }
+
+    public Optional<GroupRepresentation> tryToFindGroupByName(String realm, String groupName) {
+        GroupsResource groupsResource = realmRepository.loadRealm(realm)
+                .groups();
+
+        return groupsResource.groups()
+                .stream()
+                .filter(g -> Objects.equals(g.getName(), groupName))
                 .findFirst();
     }
 
@@ -54,17 +64,44 @@ public class GroupRepository {
 
         ResponseUtil.throwOnError(response);
 
-        addGroupRealmRoles(realm, group);
+        GroupRepresentation existingGroup = loadGroupByName(realm, group.getName()).toRepresentation();
+        GroupRepresentation patchedGroup = CloneUtils.patch(existingGroup, group);
 
-        addClientRoles(realm, group);
+        addRealmRoles(realm, patchedGroup);
+        addClientRoles(realm, patchedGroup);
+        addSubGroups(realm, patchedGroup);
+    }
 
-        List<GroupRepresentation> subGroups = group.getSubGroups();
+    private void addSubGroups(String realm, GroupRepresentation existingGroup) {
+        List<GroupRepresentation> subGroups = existingGroup.getSubGroups();
+
         if(subGroups != null && !subGroups.isEmpty()) {
             for (GroupRepresentation subGroup : subGroups) {
-                GroupResource groupResource = loadGroupByPath(realm, group.getPath());
-                groupResource.subGroup(subGroup);
+                addSubGroup(realm, existingGroup.getId(), subGroup);
             }
         }
+    }
+
+    private void addSubGroup(String realm, String parentGroupId, GroupRepresentation subGroup) {
+        GroupResource groupResource = loadGroupById(realm, parentGroupId);
+        Response response = groupResource.subGroup(subGroup);
+
+        ResponseUtil.throwOnError(response);
+
+        GroupRepresentation existingSubGroup = loadSubGroupByName(realm, parentGroupId, subGroup.getName());
+        GroupRepresentation patchedGroup = CloneUtils.patch(existingSubGroup, subGroup);
+
+        addRealmRoles(realm, patchedGroup);
+    }
+
+    private GroupRepresentation loadSubGroupByName(String realm, String parentGroupId, String name) {
+        GroupRepresentation existingGroup = loadGroupById(realm, parentGroupId).toRepresentation();
+
+        return existingGroup.getSubGroups()
+                .stream()
+                .filter(subgroup -> Objects.equals(subgroup.getName(), name))
+                .findFirst()
+                .get();
     }
 
     private void addClientRoles(String realm, GroupRepresentation group) {
@@ -87,11 +124,11 @@ public class GroupRepository {
         }
     }
 
-    private void addGroupRealmRoles(String realm, GroupRepresentation group) {
-        List<String> realmRoles = group.getRealmRoles();
+    private void addRealmRoles(String realm, GroupRepresentation existingGroup) {
+        List<String> realmRoles = existingGroup.getRealmRoles();
 
         if(realmRoles != null && !realmRoles.isEmpty()) {
-            GroupResource groupResource = loadGroupByPath(realm, group.getPath());
+            GroupResource groupResource = loadGroupById(realm, existingGroup.getId());
             RoleMappingResource groupRoles = groupResource.roles();
             RoleScopeResource groupRealmRoles = groupRoles.realmLevel();
 
@@ -104,7 +141,7 @@ public class GroupRepository {
     }
 
     public void updateGroup(String realm, GroupRepresentation group) {
-        Optional<GroupRepresentation> maybeExistingGroup = tryToFindGroup(realm, group.getPath());
+        Optional<GroupRepresentation> maybeExistingGroup = tryToFindGroupByPath(realm, group.getPath());
 
         GroupRepresentation existingGroup = maybeExistingGroup.get();
         GroupRepresentation patchedGroup = CloneUtils.patch(existingGroup, group);
@@ -121,7 +158,15 @@ public class GroupRepository {
     }
 
     private GroupResource loadGroupByPath(String realm, String groupPath) {
-        Optional<GroupRepresentation> maybeGroup = tryToFindGroup(realm, groupPath);
+        Optional<GroupRepresentation> maybeGroup = tryToFindGroupByPath(realm, groupPath);
+
+        GroupRepresentation existingGroup = maybeGroup.get();
+
+        return loadGroupById(realm, existingGroup.getId());
+    }
+
+    private GroupResource loadGroupByName(String realm, String groupName) {
+        Optional<GroupRepresentation> maybeGroup = tryToFindGroupByName(realm, groupName);
 
         GroupRepresentation existingGroup = maybeGroup.get();
 
