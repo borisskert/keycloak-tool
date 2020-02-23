@@ -161,6 +161,29 @@ public class GroupRepository {
         if (clientRoles != null) {
             updateGroupClientRoles(realm, groupId, clientRoles);
         }
+
+        List<GroupRepresentation> subGroups = group.getSubGroups();
+        if (subGroups != null) {
+            updateSubGroups(realm, patchedGroup.getId(), subGroups);
+        }
+    }
+
+    private void updateSubGroups(String realm, String parentGroupId, List<GroupRepresentation> subGroups) {
+        GroupRepresentation existingGroup = loadGroupById(realm, parentGroupId).toRepresentation();
+
+        List<GroupRepresentation> existingSubGroups = existingGroup.getSubGroups();
+
+        for (GroupRepresentation subGroup : subGroups) {
+            if (!hasGroupWithName(existingSubGroups, subGroup.getName())) {
+                addSubGroup(realm, parentGroupId, subGroup);
+            } else {
+                // TODO update subgroup
+            }
+        }
+    }
+
+    private boolean hasGroupWithName(List<GroupRepresentation> groups, String groupName) {
+        return groups.stream().anyMatch(g -> Objects.equals(g.getName(), groupName));
     }
 
     private void updateGroupRealmRoles(String realm, String groupId, List<String> realmRoles) {
@@ -177,16 +200,10 @@ public class GroupRepository {
     }
 
     private void updateGroupClientRoles(String realm, String groupId, Map<String, List<String>> groupClientRoles) {
-        System.out.println(realm);
-        System.out.println(groupId);
-
         GroupResource groupResource = loadGroupById(realm, groupId);
         RoleMappingResource rolesResource = groupResource.roles();
 
         for (Map.Entry<String, List<String>> clientRole : groupClientRoles.entrySet()) {
-            System.out.println(clientRole.getKey());
-            System.out.println(clientRole.getValue());
-
             String clientId = clientRole.getKey();
             List<String> clientRoleNames = clientRole.getValue();
 
