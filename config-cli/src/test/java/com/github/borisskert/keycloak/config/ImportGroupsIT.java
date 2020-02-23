@@ -79,6 +79,7 @@ public class ImportGroupsIT {
     @Test
     public void integrationTests() throws Exception {
         shouldCreateRealmWithGroups();
+        shouldUpdateRealmAddGroup();
     }
 
     private void shouldCreateRealmWithGroups() throws Exception {
@@ -97,6 +98,33 @@ public class ImportGroupsIT {
         assertThat("realm roles not null", createdGroup.getRealmRoles(), is(nullValue()));
         assertThat("client roles not null", createdGroup.getClientRoles(), is(nullValue()));
         assertThat("subgroups not empty", createdGroup.getSubGroups(), is(equalTo(new ArrayList<>())));
+    }
+
+    private void shouldUpdateRealmAddGroup() throws Exception {
+        doImport("1_update_realm_add_group.json");
+
+        RealmRepresentation createdRealm = keycloakProvider.get().realm(REALM_NAME).toRepresentation();
+
+        assertThat(createdRealm.getRealm(), is(REALM_NAME));
+        assertThat(createdRealm.isEnabled(), is(true));
+
+        GroupRepresentation existingGroup = loadGroup("/My Group");
+
+        assertThat("name not equal", existingGroup.getName(), is("My Group"));
+        assertThat("path not equal", existingGroup.getPath(), is("/My Group"));
+        assertThat("attributes not null", existingGroup.getAttributes(), is(nullValue()));
+        assertThat("realm roles not null", existingGroup.getRealmRoles(), is(nullValue()));
+        assertThat("client roles not null", existingGroup.getClientRoles(), is(nullValue()));
+        assertThat("subgroups not empty", existingGroup.getSubGroups(), is(equalTo(new ArrayList<>())));
+
+        GroupRepresentation addedGroup = loadGroup("/My Added Group");
+
+        assertThat("name not equal", addedGroup.getName(), is("My Added Group"));
+        assertThat("path not equal", addedGroup.getPath(), is("/My Added Group"));
+        assertThat("attributes not null", addedGroup.getAttributes(), is(nullValue()));
+        assertThat("realm roles not null", addedGroup.getRealmRoles(), is(nullValue()));
+        assertThat("client roles not null", addedGroup.getClientRoles(), is(nullValue()));
+        assertThat("subgroups not empty", addedGroup.getSubGroups(), is(equalTo(new ArrayList<>())));
     }
 
     private GroupRepresentation loadGroup(String groupPath) {

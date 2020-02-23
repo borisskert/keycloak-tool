@@ -153,6 +153,7 @@ public class RealmImportService {
 
         clientImportService.doImport(realmImport);
         roleImportService.doImport(realmImport);
+        groupImportService.importGroups(realmImport);
         importUsers(realmImport);
         importRequiredActions(realmImport);
         authenticationFlowsImportService.doImport(realmImport);
