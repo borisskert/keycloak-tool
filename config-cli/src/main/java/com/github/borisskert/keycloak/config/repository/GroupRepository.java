@@ -6,6 +6,7 @@ import org.keycloak.admin.client.resource.GroupResource;
 import org.keycloak.admin.client.resource.GroupsResource;
 import org.keycloak.admin.client.resource.RoleMappingResource;
 import org.keycloak.admin.client.resource.RoleScopeResource;
+import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.representations.idm.GroupRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import javax.ws.rs.core.Response;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -22,11 +24,17 @@ public class GroupRepository {
 
     private final RealmRepository realmRepository;
     private final RoleRepository roleRepository;
+    private final ClientRepository clientRepository;
 
     @Autowired
-    public GroupRepository(RealmRepository realmRepository, RoleRepository roleRepository) {
+    public GroupRepository(
+            RealmRepository realmRepository,
+            RoleRepository roleRepository,
+            ClientRepository clientRepository
+    ) {
         this.realmRepository = realmRepository;
         this.roleRepository = roleRepository;
+        this.clientRepository = clientRepository;
     }
 
     public Optional<GroupRepresentation> tryToFindGroup(String realm, String groupPath) {
@@ -47,6 +55,28 @@ public class GroupRepository {
         ResponseUtil.throwOnError(response);
 
         addGroupRealmRoles(realm, group);
+
+        addClientRoles(realm, group);
+    }
+
+    private void addClientRoles(String realm, GroupRepresentation group) {
+        Map<String, List<String>> groupClientRoles = group.getClientRoles();
+
+        if(groupClientRoles !=  null && !groupClientRoles.isEmpty()) {
+            GroupResource groupResource = loadGroupByPath(realm, group.getPath());
+
+            for (Map.Entry<String, List<String>> clientRoles : groupClientRoles.entrySet()) {
+                String clientId = clientRoles.getKey();
+                List<String> clientRoleNames = clientRoles.getValue();
+
+                List<RoleRepresentation> existingClientRoles = roleRepository.searchClientRoles(realm, clientId, clientRoleNames);
+
+                ClientRepresentation client = clientRepository.getClient(realm, clientId);
+                RoleScopeResource groupClientRolesResource = groupResource.roles().clientLevel(client.getId());
+
+                groupClientRolesResource.add(existingClientRoles);
+            }
+        }
     }
 
     private void addGroupRealmRoles(String realm, GroupRepresentation group) {
