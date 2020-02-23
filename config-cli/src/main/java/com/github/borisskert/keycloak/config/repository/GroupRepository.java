@@ -149,6 +149,24 @@ public class GroupRepository {
         GroupRepresentation patchedGroup = CloneUtils.patch(existingGroup, group);
 
         persistGroup(realm, patchedGroup);
+
+        List<String> realmRoles = group.getRealmRoles();
+        if(realmRoles != null) {
+            updateGroupRealmRoles(realm, existingGroup.getId(), realmRoles);
+        }
+    }
+
+    private void updateGroupRealmRoles(String realm, String groupId, List<String> realmRoles) {
+        GroupResource groupResource = loadGroupById(realm, groupId);
+
+        RoleMappingResource groupRoles = groupResource.roles();
+        RoleScopeResource groupRealmRoles = groupRoles.realmLevel();
+
+        List<RoleRepresentation> existingRealmRoles = realmRoles.stream()
+                .map(realmRole -> roleRepository.findRealmRole(realm, realmRole))
+                .collect(Collectors.toList());
+
+        groupRealmRoles.add(existingRealmRoles);
     }
 
     private void persistGroup(String realm, GroupRepresentation group) {
