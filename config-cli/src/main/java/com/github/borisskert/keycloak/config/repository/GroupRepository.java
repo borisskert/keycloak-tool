@@ -93,6 +93,7 @@ public class GroupRepository {
 
         addRealmRoles(realm, patchedGroup);
         addClientRoles(realm, patchedGroup);
+        addSubGroups(realm, patchedGroup);
     }
 
     private GroupRepresentation loadSubGroupByName(String realm, String parentGroupId, String name) {

@@ -26,10 +26,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
@@ -91,6 +88,7 @@ public class ImportGroupsIT {
         shouldUpdateRealmAddGroupWithSubGroup();
         shouldUpdateRealmAddGroupWithSubGroupWithRealmRole();
         shouldUpdateRealmAddGroupWithSubGroupWithClientRole();
+        shouldUpdateRealmAddGroupWithSubGroupWithSubGroup();
     }
 
     private void shouldCreateRealmWithGroups() throws Exception {
@@ -276,6 +274,44 @@ public class ImportGroupsIT {
         assertThat("subgroup's realm roles is null", subGroup.getRealmRoles(), is(equalTo(ImmutableList.of())));
         assertThat("subgroup's client roles is null", subGroup.getClientRoles(), is(equalTo(ImmutableMap.of("moped-client", ImmutableList.of("my_second_client_role")))));
         assertThat("subgroup's subgroups is null", subGroup.getSubGroups(), is(equalTo(ImmutableList.of())));
+    }
+
+    private void shouldUpdateRealmAddGroupWithSubGroupWithSubGroup() throws Exception {
+        doImport("8_update_realm_add_group_with_subgroup_with_client_role.json");
+
+        RealmRepresentation createdRealm = keycloakProvider.get().realm(REALM_NAME).toRepresentation();
+
+        assertThat(createdRealm.getRealm(), is(REALM_NAME));
+        assertThat(createdRealm.isEnabled(), is(true));
+
+        GroupRepresentation addedGroup = loadGroup("/Group with subgroup with subgroup");
+
+        assertThat("name not equal", addedGroup.getName(), is("Group with subgroup with subgroup"));
+        assertThat("path not equal", addedGroup.getPath(), is("/Group with subgroup with subgroup"));
+        assertThat("attributes is null", addedGroup.getAttributes(), is(equalTo(ImmutableMap.of())));
+        assertThat("realm roles is null", addedGroup.getRealmRoles(), is(equalTo(ImmutableList.of())));
+        assertThat("client roles is null", addedGroup.getClientRoles(), is(equalTo(ImmutableMap.of())));
+        List<GroupRepresentation> subGroups = addedGroup.getSubGroups();
+        assertThat("subgroups is null", subGroups, is(not(nullValue())));
+        assertThat("subgroups is empty", subGroups, is(hasSize(1)));
+
+        GroupRepresentation subGroup = subGroups.get(0);
+        assertThat("subgroup is null", subGroup, is(not(nullValue())));
+        assertThat("subgroup's name not equal", subGroup.getName(), is("My SubGroup"));
+        assertThat("subgroup's path not equal", subGroup.getPath(), is("/Group with subgroup with subgroup/My SubGroup"));
+        assertThat("subgroup's attributes is null", subGroup.getAttributes(), is(equalTo(ImmutableMap.of())));
+        assertThat("subgroup's realm roles is null", subGroup.getRealmRoles(), is(equalTo(ImmutableList.of())));
+        assertThat("subgroup's client roles is null", subGroup.getClientRoles(), is(equalTo(ImmutableMap.of())));
+
+        List<GroupRepresentation> innerSubGroups = subGroup.getSubGroups();
+        assertThat("subgroup's subgroups is null", innerSubGroups, is(hasSize(1)));
+        GroupRepresentation innerSubGroup = innerSubGroups.get(0);
+        assertThat("subgroup is null", innerSubGroup, is(not(nullValue())));
+        assertThat("subgroup's name not equal", innerSubGroup.getName(), is("My Inner SubGroup"));
+        assertThat("subgroup's path not equal", innerSubGroup.getPath(), is("/Group with subgroup with subgroup/My SubGroup/My Inner SubGroup"));
+        assertThat("subgroup's attributes is null", innerSubGroup.getAttributes(), is(equalTo(ImmutableMap.of())));
+        assertThat("subgroup's realm roles is null", innerSubGroup.getRealmRoles(), is(equalTo(ImmutableList.of())));
+        assertThat("subgroup's client roles is null", innerSubGroup.getClientRoles(), is(equalTo(ImmutableMap.of())));
     }
 
     private GroupRepresentation loadGroup(String groupPath) {
