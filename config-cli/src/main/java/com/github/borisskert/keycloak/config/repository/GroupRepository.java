@@ -92,6 +92,7 @@ public class GroupRepository {
         GroupRepresentation patchedGroup = CloneUtils.patch(existingSubGroup, subGroup);
 
         addRealmRoles(realm, patchedGroup);
+        addClientRoles(realm, patchedGroup);
     }
 
     private GroupRepresentation loadSubGroupByName(String realm, String parentGroupId, String name) {
@@ -104,11 +105,11 @@ public class GroupRepository {
                 .get();
     }
 
-    private void addClientRoles(String realm, GroupRepresentation group) {
-        Map<String, List<String>> groupClientRoles = group.getClientRoles();
+    private void addClientRoles(String realm, GroupRepresentation existingGroup) {
+        Map<String, List<String>> groupClientRoles = existingGroup.getClientRoles();
 
         if(groupClientRoles !=  null && !groupClientRoles.isEmpty()) {
-            GroupResource groupResource = loadGroupByPath(realm, group.getPath());
+            GroupResource groupResource = loadGroupById(realm, existingGroup.getId());
 
             for (Map.Entry<String, List<String>> clientRoles : groupClientRoles.entrySet()) {
                 String clientId = clientRoles.getKey();
