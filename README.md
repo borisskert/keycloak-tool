@@ -27,10 +27,10 @@ But keep your files as small as possible. Remove all UUIDs and all stuff which i
 
 ## Compatibility matrix
 
-| keycloak-tools     | **Keycloak 4.4.0.Final** | **Keycloak 4.5.0.Final** | **Keycloak 4.6.0.Final** | **Keycloak 4.7.0.Final** | **Keycloak 4.8.3.Final** | **Keycloak 5.0.0** | **Keycloak 6.0.1** | **Keycloak 7.0.0** | **Keycloak 8.0.1** |
+| keycloak-tools     | **Keycloak 4.4.0.Final** | **Keycloak 4.5.0.Final** | **Keycloak 4.6.0.Final** | **Keycloak 4.7.0.Final** | **Keycloak 4.8.3.Final** | **Keycloak 5.0.0** | **Keycloak 6.0.1** | **Keycloak 7.0.0** | **Keycloak 8.0.x** |
 |--------------------|:------------------------:|:------------------------:|:------------------------:|:------------------------:|:------------------------:|:------------------:|:------------------:|:------------------:|:------------------:|
 | **v0.9.0**         |         ✓                |         ✓                |         ✓                |         ✓                |         ✓                |         ✓          |         ✓          |         ✓          |         ✗          |
-| **v0.10.0**        |         ✗                |         ✗                |         ✗                |         ✗                |         ✗                |         ✗          |         ✗          |         ✗          |         ✓          |
+| **v0.10.x**        |         ✗                |         ✗                |         ✗                |         ✗                |         ✗                |         ✗          |         ✗          |         ✗          |         ✓          |
 | **master**         |         ✗                |         ✗                |         ✗                |         ✗                |         ✗                |         ✗          |         ✗          |         ✗          |         ✓          |
 - `✓` Supported
 - `✗` Not supported
@@ -79,7 +79,7 @@ $ docker run -e KEYCLOAK_URL=http://<your keycloak host>:8080 \
 version: '3.1'
 services:
   keycloak:
-    image: jboss/keycloak:8.0.1
+    image: jboss/keycloak:8.0.2
     environment:
       KEYCLOAK_USER: <keycloak admin username>
       KEYCLOAK_PASSWORD: <keycloak admin password>
