@@ -1,0 +1,23 @@
+{
+  "enabled": true,
+  "realm": "realmWithGroups",
+  "groups": [
+    {
+      "name": "My Group",
+      "path": "/My Group"
+    },
+    {
+      "name": "My Added Group",
+      "path": "/My Added Group"
+    },
+    {
+      "name": "Group with attribute",
+      "path": "/Group with attribute",
+      "attributes": {
+        "my attribute": [
+          "my attribute value"
+        ]
+      }
+    }
+  ]
+}

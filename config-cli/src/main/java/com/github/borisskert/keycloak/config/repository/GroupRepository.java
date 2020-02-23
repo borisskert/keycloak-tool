@@ -1,6 +1,8 @@
 package com.github.borisskert.keycloak.config.repository;
 
+import com.github.borisskert.keycloak.config.util.CloneUtils;
 import com.github.borisskert.keycloak.config.util.ResponseUtil;
+import org.keycloak.admin.client.resource.GroupResource;
 import org.keycloak.admin.client.resource.GroupsResource;
 import org.keycloak.representations.idm.GroupRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,5 +38,28 @@ public class GroupRepository {
                 .add(group);
 
         ResponseUtil.throwOnError(response);
+    }
+
+    public void updateGroup(String realm, GroupRepresentation group) {
+        Optional<GroupRepresentation> maybeExistingGroup = tryToFindGroup(realm, group.getPath());
+
+        GroupRepresentation existingGroup = maybeExistingGroup.get();
+        GroupRepresentation patchedGroup = CloneUtils.patch(existingGroup, group);
+
+        persistGroup(realm, patchedGroup);
+    }
+
+    private void persistGroup(String realm, GroupRepresentation group) {
+        GroupResource groupResource = loadGroup(realm, group.getId());
+
+        groupResource.toRepresentation();
+
+        groupResource.update(group);
+    }
+
+    private GroupResource loadGroup(String realm, String groupId) {
+        return realmRepository.loadRealm(realm)
+                .groups()
+                .group(groupId);
     }
 }

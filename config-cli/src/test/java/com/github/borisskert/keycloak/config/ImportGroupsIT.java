@@ -9,10 +9,13 @@ import com.github.borisskert.keycloak.config.service.RealmImportService;
 import com.github.borisskert.keycloak.config.util.KeycloakAuthentication;
 import com.github.borisskert.keycloak.config.util.KeycloakRepository;
 import com.github.borisskert.keycloak.config.util.ResourceLoader;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.keycloak.admin.client.resource.GroupsResource;
 import org.keycloak.representations.idm.GroupRepresentation;
 import org.keycloak.representations.idm.RealmRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +27,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -80,6 +84,7 @@ public class ImportGroupsIT {
     public void integrationTests() throws Exception {
         shouldCreateRealmWithGroups();
         shouldUpdateRealmAddGroup();
+        shouldUpdateRealmAddGroupWithAttribute();
     }
 
     private void shouldCreateRealmWithGroups() throws Exception {
@@ -94,9 +99,9 @@ public class ImportGroupsIT {
 
         assertThat("name not equal", createdGroup.getName(), is("My Group"));
         assertThat("path not equal", createdGroup.getPath(), is("/My Group"));
-        assertThat("attributes not null", createdGroup.getAttributes(), is(nullValue()));
-        assertThat("realm roles not null", createdGroup.getRealmRoles(), is(nullValue()));
-        assertThat("client roles not null", createdGroup.getClientRoles(), is(nullValue()));
+        assertThat("attributes is null", createdGroup.getAttributes(), is(equalTo(new HashMap<>())));
+        assertThat("realm roles is null", createdGroup.getRealmRoles(), is(equalTo(new ArrayList<>())));
+        assertThat("client roles not null", createdGroup.getClientRoles(), is(equalTo(new HashMap<>())));
         assertThat("subgroups not empty", createdGroup.getSubGroups(), is(equalTo(new ArrayList<>())));
     }
 
@@ -112,30 +117,56 @@ public class ImportGroupsIT {
 
         assertThat("name not equal", existingGroup.getName(), is("My Group"));
         assertThat("path not equal", existingGroup.getPath(), is("/My Group"));
-        assertThat("attributes not null", existingGroup.getAttributes(), is(nullValue()));
-        assertThat("realm roles not null", existingGroup.getRealmRoles(), is(nullValue()));
-        assertThat("client roles not null", existingGroup.getClientRoles(), is(nullValue()));
-        assertThat("subgroups not empty", existingGroup.getSubGroups(), is(equalTo(new ArrayList<>())));
+        assertThat("attributes is null", existingGroup.getAttributes(), is(equalTo(ImmutableMap.of())));
+        assertThat("realm roles is null", existingGroup.getRealmRoles(), is(equalTo(ImmutableList.of())));
+        assertThat("client roles is null", existingGroup.getClientRoles(), is(equalTo(ImmutableMap.of())));
+        assertThat("subgroups is null", existingGroup.getSubGroups(), is(equalTo(ImmutableList.of())));
 
         GroupRepresentation addedGroup = loadGroup("/My Added Group");
 
         assertThat("name not equal", addedGroup.getName(), is("My Added Group"));
         assertThat("path not equal", addedGroup.getPath(), is("/My Added Group"));
-        assertThat("attributes not null", addedGroup.getAttributes(), is(nullValue()));
-        assertThat("realm roles not null", addedGroup.getRealmRoles(), is(nullValue()));
-        assertThat("client roles not null", addedGroup.getClientRoles(), is(nullValue()));
-        assertThat("subgroups not empty", addedGroup.getSubGroups(), is(equalTo(new ArrayList<>())));
+        assertThat("attributes is null", addedGroup.getAttributes(), is(equalTo(ImmutableMap.of())));
+        assertThat("realm roles is null", addedGroup.getRealmRoles(), is(equalTo(ImmutableList.of())));
+        assertThat("client roles is null", addedGroup.getClientRoles(), is(equalTo(ImmutableMap.of())));
+        assertThat("subgroups is null", addedGroup.getSubGroups(), is(equalTo(ImmutableList.of())));
+    }
+
+    private void shouldUpdateRealmAddGroupWithAttribute() throws Exception {
+        doImport("2_update_realm_add_group_with_attribute.json");
+
+        RealmRepresentation createdRealm = keycloakProvider.get().realm(REALM_NAME).toRepresentation();
+
+        assertThat(createdRealm.getRealm(), is(REALM_NAME));
+        assertThat(createdRealm.isEnabled(), is(true));
+
+        GroupRepresentation addedGroup = loadGroup("/Group with attribute");
+
+        assertThat("name not equal", addedGroup.getName(), is("Group with attribute"));
+        assertThat("path not equal", addedGroup.getPath(), is("/Group with attribute"));
+        assertThat("attributes is null", addedGroup.getAttributes(), is(equalTo(
+                ImmutableMap.of("my attribute", ImmutableList.of("my attribute value"))
+        )));
+        assertThat("realm roles is null", addedGroup.getRealmRoles(), is(equalTo(ImmutableList.of())));
+        assertThat("client roles is null", addedGroup.getClientRoles(), is(equalTo(ImmutableMap.of())));
+        assertThat("subgroups is null", addedGroup.getSubGroups(), is(equalTo(ImmutableList.of())));
     }
 
     private GroupRepresentation loadGroup(String groupPath) {
-        return keycloakProvider.get()
+        GroupsResource groupsResource = keycloakProvider.get()
                 .realm(REALM_NAME)
-                .groups()
+                .groups();
+
+        GroupRepresentation groupRepresentation = groupsResource
                 .groups()
                 .stream()
                 .filter(g -> Objects.equals(groupPath, g.getPath()))
                 .findFirst()
                 .get();
+
+        return groupsResource
+                .group(groupRepresentation.getId())
+                .toRepresentation();
     }
 
     private void doImport(String realmImport) {
