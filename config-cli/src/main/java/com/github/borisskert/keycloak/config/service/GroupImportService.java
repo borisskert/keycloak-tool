@@ -39,6 +39,7 @@ public class GroupImportService {
 
         if (maybeGroup.isPresent()) {
             logger.debug("Update group '{}' in realm '{}'", groupName, realm);
+            groupRepository.updateGroup(realm, group);
         } else {
             logger.debug("Create group '{}' in realm '{}'", groupName, realm);
             groupRepository.createGroup(realm, group);

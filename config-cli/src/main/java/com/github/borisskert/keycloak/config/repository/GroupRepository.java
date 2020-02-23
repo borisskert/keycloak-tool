@@ -143,9 +143,9 @@ public class GroupRepository {
     }
 
     public void updateGroup(String realm, GroupRepresentation group) {
-        Optional<GroupRepresentation> maybeExistingGroup = tryToFindGroupByPath(realm, group.getPath());
+        GroupRepresentation existingGroup = loadGroupByName(realm, group.getName())
+                .toRepresentation();
 
-        GroupRepresentation existingGroup = maybeExistingGroup.get();
         GroupRepresentation patchedGroup = CloneUtils.patch(existingGroup, group);
 
         persistGroup(realm, patchedGroup);
@@ -153,18 +153,7 @@ public class GroupRepository {
 
     private void persistGroup(String realm, GroupRepresentation group) {
         GroupResource groupResource = loadGroupById(realm, group.getId());
-
-        groupResource.toRepresentation();
-
         groupResource.update(group);
-    }
-
-    private GroupResource loadGroupByPath(String realm, String groupPath) {
-        Optional<GroupRepresentation> maybeGroup = tryToFindGroupByPath(realm, groupPath);
-
-        GroupRepresentation existingGroup = maybeGroup.get();
-
-        return loadGroupById(realm, existingGroup.getId());
     }
 
     private GroupResource loadGroupByName(String realm, String groupName) {
