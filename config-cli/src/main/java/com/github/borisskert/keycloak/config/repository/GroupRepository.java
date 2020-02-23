@@ -75,7 +75,7 @@ public class GroupRepository {
     private void addSubGroups(String realm, GroupRepresentation existingGroup) {
         List<GroupRepresentation> subGroups = existingGroup.getSubGroups();
 
-        if(subGroups != null && !subGroups.isEmpty()) {
+        if (subGroups != null && !subGroups.isEmpty()) {
             for (GroupRepresentation subGroup : subGroups) {
                 addSubGroup(realm, existingGroup.getId(), subGroup);
             }
@@ -109,7 +109,7 @@ public class GroupRepository {
     private void addClientRoles(String realm, GroupRepresentation existingGroup) {
         Map<String, List<String>> groupClientRoles = existingGroup.getClientRoles();
 
-        if(groupClientRoles !=  null && !groupClientRoles.isEmpty()) {
+        if (groupClientRoles != null && !groupClientRoles.isEmpty()) {
             GroupResource groupResource = loadGroupById(realm, existingGroup.getId());
 
             for (Map.Entry<String, List<String>> clientRoles : groupClientRoles.entrySet()) {
@@ -129,7 +129,7 @@ public class GroupRepository {
     private void addRealmRoles(String realm, GroupRepresentation existingGroup) {
         List<String> realmRoles = existingGroup.getRealmRoles();
 
-        if(realmRoles != null && !realmRoles.isEmpty()) {
+        if (realmRoles != null && !realmRoles.isEmpty()) {
             GroupResource groupResource = loadGroupById(realm, existingGroup.getId());
             RoleMappingResource groupRoles = groupResource.roles();
             RoleScopeResource groupRealmRoles = groupRoles.realmLevel();
@@ -150,9 +150,16 @@ public class GroupRepository {
 
         persistGroup(realm, patchedGroup);
 
+        String groupId = existingGroup.getId();
+
         List<String> realmRoles = group.getRealmRoles();
-        if(realmRoles != null) {
-            updateGroupRealmRoles(realm, existingGroup.getId(), realmRoles);
+        if (realmRoles != null) {
+            updateGroupRealmRoles(realm, groupId, realmRoles);
+        }
+
+        Map<String, List<String>> clientRoles = group.getClientRoles();
+        if (clientRoles != null) {
+            updateGroupClientRoles(realm, groupId, clientRoles);
         }
     }
 
@@ -167,6 +174,28 @@ public class GroupRepository {
                 .collect(Collectors.toList());
 
         groupRealmRoles.add(existingRealmRoles);
+    }
+
+    private void updateGroupClientRoles(String realm, String groupId, Map<String, List<String>> groupClientRoles) {
+        System.out.println(realm);
+        System.out.println(groupId);
+
+        GroupResource groupResource = loadGroupById(realm, groupId);
+        RoleMappingResource rolesResource = groupResource.roles();
+
+        for (Map.Entry<String, List<String>> clientRole : groupClientRoles.entrySet()) {
+            System.out.println(clientRole.getKey());
+            System.out.println(clientRole.getValue());
+
+            String clientId = clientRole.getKey();
+            List<String> clientRoleNames = clientRole.getValue();
+
+            ClientRepresentation client = clientRepository.getClient(realm, clientId);
+            RoleScopeResource groupClientRolesResource = rolesResource.clientLevel(client.getId());
+
+            List<RoleRepresentation> existingClientRoles = roleRepository.searchClientRoles(realm, clientId, clientRoleNames);
+            groupClientRolesResource.add(existingClientRoles);
+        }
     }
 
     private void persistGroup(String realm, GroupRepresentation group) {
