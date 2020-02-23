@@ -1,7 +1,7 @@
 package com.github.borisskert.keycloak.config.service;
 
-import com.github.borisskert.keycloak.config.repository.RealmRepository;
 import com.github.borisskert.keycloak.config.model.RealmImport;
+import com.github.borisskert.keycloak.config.repository.RealmRepository;
 import com.github.borisskert.keycloak.config.util.CloneUtils;
 import org.keycloak.representations.idm.RealmRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
@@ -22,6 +22,7 @@ public class RealmImportService {
 
     private final String[] ignoredPropertiesForCreation = new String[]{
             "users",
+            "groups",
             "browserFlow",
             "directGrantFlow",
             "clientAuthenticationFlow",
@@ -36,6 +37,7 @@ public class RealmImportService {
             "clients",
             "roles",
             "users",
+            "groups",
             "browserFlow",
             "directGrantFlow",
             "clientAuthenticationFlow",
@@ -62,6 +64,7 @@ public class RealmImportService {
     private final UserImportService userImportService;
     private final RoleImportService roleImportService;
     private final ClientImportService clientImportService;
+    private final GroupImportService groupImportService;
     private final ComponentImportService componentImportService;
     private final AuthenticationFlowsImportService authenticationFlowsImportService;
     private final RequiredActionsImportService requiredActionsImportService;
@@ -79,6 +82,7 @@ public class RealmImportService {
             UserImportService userImportService,
             RoleImportService roleImportService,
             ClientImportService clientImportService,
+            GroupImportService groupImportService,
             ComponentImportService componentImportService,
             AuthenticationFlowsImportService authenticationFlowsImportService,
             RequiredActionsImportService requiredActionsImportService,
@@ -90,6 +94,7 @@ public class RealmImportService {
         this.userImportService = userImportService;
         this.roleImportService = roleImportService;
         this.clientImportService = clientImportService;
+        this.groupImportService = groupImportService;
         this.componentImportService = componentImportService;
         this.authenticationFlowsImportService = authenticationFlowsImportService;
         this.requiredActionsImportService = requiredActionsImportService;
@@ -100,7 +105,7 @@ public class RealmImportService {
     public void doImport(RealmImport realmImport) {
         boolean realmExists = realmRepository.exists(realmImport.getRealm());
 
-        if(realmExists) {
+        if (realmExists) {
             updateRealmIfNecessary(realmImport);
         } else {
             createRealm(realmImport);
@@ -115,8 +120,8 @@ public class RealmImportService {
         RealmRepresentation realmForCreation = CloneUtils.deepClone(realmImport, RealmRepresentation.class, ignoredPropertiesForCreation);
         realmRepository.create(realmForCreation);
 
-        realmRepository.loadRealm(realmImport.getRealm());
         importUsers(realmImport);
+        groupImportService.importGroups(realmImport);
         authenticationFlowsImportService.doImport(realmImport);
         setupFlows(realmImport);
         importComponents(realmImport);
@@ -129,7 +134,7 @@ public class RealmImportService {
     }
 
     private void updateRealmIfNecessary(RealmImport realmImport) {
-        if(forceImport || hasToBeUpdated(realmImport)) {
+        if (forceImport || hasToBeUpdated(realmImport)) {
             updateRealm(realmImport);
         } else {
             logger.debug(
@@ -165,8 +170,8 @@ public class RealmImportService {
     private void importUsers(RealmImport realmImport) {
         List<UserRepresentation> users = realmImport.getUsers();
 
-        if(users != null) {
-            for(UserRepresentation user : users) {
+        if (users != null) {
+            for (UserRepresentation user : users) {
                 userImportService.importUser(realmImport.getRealm(), user);
             }
         }
