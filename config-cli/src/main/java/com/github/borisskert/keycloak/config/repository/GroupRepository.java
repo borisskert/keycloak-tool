@@ -94,25 +94,17 @@ public class GroupRepository {
     }
 
     private void updateSubGroup(String realm, String parentGroupId, GroupRepresentation subGroup) {
-        GroupResource groupResource = loadGroupById(realm, parentGroupId);
-        GroupRepresentation group = groupResource.toRepresentation();
-
-        GroupRepresentation existingSubGroup = group.getSubGroups()
-                .stream()
-                .filter(subgroup -> Objects.equals(subGroup.getName(), subGroup.getName()))
-                .findFirst()
-                .get();
+        GroupRepresentation existingSubGroup = loadSubGroupByName(realm, parentGroupId, subGroup.getName());
 
         GroupRepresentation patchedSubGroup = CloneUtils.patch(existingSubGroup, subGroup);
-
         persistGroup(realm, patchedSubGroup);
-//
-//        String groupId = existingSubGroup.getId();
-//
-//        List<String> realmRoles = group.getRealmRoles();
-//        if (realmRoles != null) {
-//            updateGroupRealmRoles(realm, groupId, realmRoles);
-//        }
+
+        String subGroupId = existingSubGroup.getId();
+
+        List<String> realmRoles = subGroup.getRealmRoles();
+        if (realmRoles != null) {
+            updateGroupRealmRoles(realm, subGroupId, realmRoles);
+        }
 //
 //        Map<String, List<String>> clientRoles = group.getClientRoles();
 //        if (clientRoles != null) {
