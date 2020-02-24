@@ -104,22 +104,24 @@ public class GroupRepository {
     }
 
     private void addClientRoles(String realm, GroupRepresentation existingGroup) {
-        Map<String, List<String>> groupClientRoles = existingGroup.getClientRoles();
+        Map<String, List<String>> existingClientRoles = existingGroup.getClientRoles();
+        GroupResource groupResource = loadGroupById(realm, existingGroup.getId());
 
-        if (groupClientRoles != null && !groupClientRoles.isEmpty()) {
-            GroupResource groupResource = loadGroupById(realm, existingGroup.getId());
+        if (existingClientRoles != null && !existingClientRoles.isEmpty()) {
 
-            for (Map.Entry<String, List<String>> clientRoles : groupClientRoles.entrySet()) {
-                String clientId = clientRoles.getKey();
-                List<String> clientRoleNames = clientRoles.getValue();
+            for (Map.Entry<String, List<String>> existingClientRolesEntry : existingClientRoles.entrySet()) {
+                String clientId = existingClientRolesEntry.getKey();
+                List<String> clientRoleNames = existingClientRolesEntry.getValue();
 
-                List<RoleRepresentation> existingClientRoles = roleRepository.searchClientRoles(realm, clientId, clientRoleNames);
+                List<RoleRepresentation> actualClientRoles = roleRepository.searchClientRoles(realm, clientId, clientRoleNames);
 
                 ClientRepresentation client = clientRepository.getClient(realm, clientId);
                 RoleScopeResource groupClientRolesResource = groupResource.roles().clientLevel(client.getId());
 
-                groupClientRolesResource.add(existingClientRoles);
+                groupClientRolesResource.add(actualClientRoles);
             }
+
+            // TODO remove existing clients which are not existing in import
         }
     }
 
@@ -226,9 +228,16 @@ public class GroupRepository {
         GroupResource groupResource = loadGroupById(realm, groupId);
         GroupRepresentation existingGroup = groupResource.toRepresentation();
 
-        RoleMappingResource rolesResource = groupResource.roles();
-
         Map<String, List<String>> existingClientRoleNames = existingGroup.getClientRoles();
+
+        for (Map.Entry<String, List<String>> existingClientRoleNamesEntry : existingClientRoleNames.entrySet()) {
+            String clientId = existingClientRoleNamesEntry.getKey();
+            List<String> clientRoleNames = existingClientRoleNamesEntry.getValue();
+
+            if (!clientRoleNames.isEmpty() && !groupClientRoles.containsKey(clientId)) {
+                removeClientRoles(realm, groupId, clientId, clientRoleNames);
+            }
+        }
 
         for (Map.Entry<String, List<String>> clientRole : groupClientRoles.entrySet()) {
             List<String> clientRoleNamesToAdd = new ArrayList<>();
@@ -236,10 +245,6 @@ public class GroupRepository {
 
             String clientId = clientRole.getKey();
             List<String> clientRoleNames = clientRole.getValue();
-
-            ClientRepresentation client = clientRepository.getClient(realm, clientId);
-            RoleScopeResource groupClientRolesResource = rolesResource.clientLevel(client.getId());
-
 
             List<String> existingClientRoleNamesForClient = existingClientRoleNames.get(clientId);
 
@@ -249,7 +254,7 @@ public class GroupRepository {
                 }
             }
 
-            if(existingClientRoleNamesForClient != null) {
+            if (existingClientRoleNamesForClient != null) {
                 for (String existingClientRoleNameForClient : existingClientRoleNamesForClient) {
                     if (!clientRoleNames.contains(existingClientRoleNameForClient)) {
                         clientRoleNamesToRemove.add(existingClientRoleNameForClient);
@@ -257,12 +262,35 @@ public class GroupRepository {
                 }
             }
 
-            List<RoleRepresentation> clientRolesToAdd = roleRepository.searchClientRoles(realm, clientId, clientRoleNamesToAdd);
-            groupClientRolesResource.add(clientRolesToAdd);
-
-            List<RoleRepresentation> clientRolesToRemove = roleRepository.searchClientRoles(realm, clientId, clientRoleNamesToRemove);
-            groupClientRolesResource.remove(clientRolesToRemove);
+            addClientRoles(realm, groupId, clientId, clientRoleNamesToAdd);
+            removeClientRoles(realm, groupId, clientId, clientRoleNamesToRemove);
         }
+    }
+
+    private void addClientRoles(String realm, String groupId, String clientId, List<String> roleNames) {
+        System.out.println(new StringJoiner(" ").add(realm).add(groupId).add(clientId).add(roleNames.toString()));
+
+        GroupResource groupResource = loadGroupById(realm, groupId);
+        RoleMappingResource rolesResource = groupResource.roles();
+
+        ClientRepresentation client = clientRepository.getClient(realm, clientId);
+        RoleScopeResource groupClientRolesResource = rolesResource.clientLevel(client.getId());
+
+        List<RoleRepresentation> clientRoles = roleRepository.searchClientRoles(realm, clientId, roleNames);
+        groupClientRolesResource.add(clientRoles);
+    }
+
+    private void removeClientRoles(String realm, String groupId, String clientId, List<String> roleNames) {
+        System.out.println(new StringJoiner(" ").add(realm).add(groupId).add(clientId).add(roleNames.toString()));
+
+        GroupResource groupResource = loadGroupById(realm, groupId);
+        RoleMappingResource rolesResource = groupResource.roles();
+
+        ClientRepresentation client = clientRepository.getClient(realm, clientId);
+        RoleScopeResource groupClientRolesResource = rolesResource.clientLevel(client.getId());
+
+        List<RoleRepresentation> clientRoles = roleRepository.searchClientRoles(realm, clientId, roleNames);
+        groupClientRolesResource.remove(clientRoles);
     }
 
     private void persistGroup(String realm, GroupRepresentation group) {
