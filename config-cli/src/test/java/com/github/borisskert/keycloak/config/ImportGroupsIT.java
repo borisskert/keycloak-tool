@@ -106,6 +106,7 @@ public class ImportGroupsIT {
         shouldUpdateRealmUpdateGroupRemoveClientRole();
         shouldUpdateRealmUpdateGroupAddClientRolesFromSecondClient();
         shouldUpdateRealmUpdateGroupRemoveClient();
+        shouldUpdateRealmUpdateGroupAddAttributeToSubGroup();
     }
 
     private void shouldCreateRealmWithGroups() throws Exception {
@@ -294,7 +295,7 @@ public class ImportGroupsIT {
     }
 
     private void shouldUpdateRealmAddGroupWithSubGroupWithSubGroup() throws Exception {
-        doImport("8_update_realm_add_group_with_subgroup_with_client_role.json");
+        doImport("8_update_realm_add_group_with_subgroup_with_subgroup.json");
 
         RealmRepresentation createdRealm = keycloakProvider.get().realm(REALM_NAME).toRepresentation();
 
@@ -852,6 +853,46 @@ public class ImportGroupsIT {
         assertThat("subgroup's name not equal", subGroup.getName(), is("My SubGroup"));
         assertThat("subgroup's path not equal", subGroup.getPath(), is("/My Group/My SubGroup"));
         assertThat("subgroup's attributes is null", subGroup.getAttributes(), is(equalTo(ImmutableMap.of())));
+        assertThat("subgroup's realm roles is null", subGroup.getRealmRoles(), is(equalTo(ImmutableList.of())));
+        assertThat("subgroup's client roles is null", subGroup.getClientRoles(), is(equalTo(ImmutableMap.of())));
+        assertThat("subgroup's subgroups is null", subGroup.getSubGroups(), is(equalTo(ImmutableList.of())));
+    }
+
+    private void shouldUpdateRealmUpdateGroupAddAttributeToSubGroup() throws Exception {
+        doImport("26_update_realm_update_group_add_attribute_to_subgroup.json");
+
+        RealmRepresentation createdRealm = keycloakProvider.get().realm(REALM_NAME).toRepresentation();
+
+        assertThat(createdRealm.getRealm(), is(REALM_NAME));
+        assertThat(createdRealm.isEnabled(), is(true));
+
+        GroupRepresentation updatedGroup = loadGroup("/My Group");
+
+        assertThat("name not equal", updatedGroup.getName(), is("My Group"));
+        assertThat("path not equal", updatedGroup.getPath(), is("/My Group"));
+        assertThat("attributes is null", updatedGroup.getAttributes(), is(equalTo(
+                ImmutableMap.of(
+                        "my changed attribute", ImmutableList.of("my changed attribute value"))
+        )));
+        assertThat("realm roles is null", updatedGroup.getRealmRoles(), is(equalTo(ImmutableList.of())));
+        assertThat("client roles is null", sorted(updatedGroup.getClientRoles()), is(equalTo(
+                ImmutableMap.of(
+                        "second-moped-client", ImmutableList.of(
+                                "my_client_role_of_second-moped-client",
+                                "my_second_client_role_of_second-moped-client"
+                        ))
+        )));
+
+        List<GroupRepresentation> subGroups = updatedGroup.getSubGroups();
+        assertThat("subgroups is empty", subGroups, is(hasSize(1)));
+
+        GroupRepresentation subGroup = subGroups.get(0);
+        assertThat("subgroup is null", subGroup, is(not(nullValue())));
+        assertThat("subgroup's name not equal", subGroup.getName(), is("My SubGroup"));
+        assertThat("subgroup's path not equal", subGroup.getPath(), is("/My Group/My SubGroup"));
+        assertThat("subgroup's attributes is null", subGroup.getAttributes(), is(equalTo(
+                ImmutableMap.of("my subgroup attribute", ImmutableList.of("my subgroup attribute value")))
+        ));
         assertThat("subgroup's realm roles is null", subGroup.getRealmRoles(), is(equalTo(ImmutableList.of())));
         assertThat("subgroup's client roles is null", subGroup.getClientRoles(), is(equalTo(ImmutableMap.of())));
         assertThat("subgroup's subgroups is null", subGroup.getSubGroups(), is(equalTo(ImmutableList.of())));

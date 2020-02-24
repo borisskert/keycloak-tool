@@ -93,6 +93,38 @@ public class GroupRepository {
         addSubGroups(realm, patchedGroup);
     }
 
+    private void updateSubGroup(String realm, String parentGroupId, GroupRepresentation subGroup) {
+        GroupResource groupResource = loadGroupById(realm, parentGroupId);
+        GroupRepresentation group = groupResource.toRepresentation();
+
+        GroupRepresentation existingSubGroup = group.getSubGroups()
+                .stream()
+                .filter(subgroup -> Objects.equals(subGroup.getName(), subGroup.getName()))
+                .findFirst()
+                .get();
+
+        GroupRepresentation patchedSubGroup = CloneUtils.patch(existingSubGroup, subGroup);
+
+        persistGroup(realm, patchedSubGroup);
+//
+//        String groupId = existingSubGroup.getId();
+//
+//        List<String> realmRoles = group.getRealmRoles();
+//        if (realmRoles != null) {
+//            updateGroupRealmRoles(realm, groupId, realmRoles);
+//        }
+//
+//        Map<String, List<String>> clientRoles = group.getClientRoles();
+//        if (clientRoles != null) {
+//            updateGroupClientRoles(realm, groupId, clientRoles);
+//        }
+//
+//        List<GroupRepresentation> subGroups = group.getSubGroups();
+//        if (subGroups != null) {
+//            updateSubGroups(realm, patchedSubGroup.getId(), subGroups);
+//        }
+    }
+
     private GroupRepresentation loadSubGroupByName(String realm, String parentGroupId, String name) {
         GroupRepresentation existingGroup = loadGroupById(realm, parentGroupId).toRepresentation();
 
@@ -120,8 +152,6 @@ public class GroupRepository {
 
                 groupClientRolesResource.add(actualClientRoles);
             }
-
-            // TODO remove existing clients which are not existing in import
         }
     }
 
@@ -176,7 +206,7 @@ public class GroupRepository {
             if (!hasGroupWithName(existingSubGroups, subGroup.getName())) {
                 addSubGroup(realm, parentGroupId, subGroup);
             } else {
-                // TODO update subgroup
+                updateSubGroup(realm, parentGroupId, subGroup);
             }
         }
     }
