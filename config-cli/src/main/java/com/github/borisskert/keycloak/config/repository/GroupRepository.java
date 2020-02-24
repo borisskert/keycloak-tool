@@ -105,11 +105,11 @@ public class GroupRepository {
         if (realmRoles != null) {
             updateGroupRealmRoles(realm, subGroupId, realmRoles);
         }
-//
-//        Map<String, List<String>> clientRoles = group.getClientRoles();
-//        if (clientRoles != null) {
-//            updateGroupClientRoles(realm, groupId, clientRoles);
-//        }
+
+        Map<String, List<String>> clientRoles = subGroup.getClientRoles();
+        if (clientRoles != null) {
+            updateGroupClientRoles(realm, subGroupId, clientRoles);
+        }
 //
 //        List<GroupRepresentation> subGroups = group.getSubGroups();
 //        if (subGroups != null) {
