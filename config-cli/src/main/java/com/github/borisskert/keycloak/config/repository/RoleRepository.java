@@ -9,10 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.ws.rs.NotFoundException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -53,12 +50,19 @@ public class RoleRepository {
         rolesResource.create(role);
 
         updateRealmCompositesIfNecessary(realm, role);
+        updateClientCompositesIfNecessary(realm, role);
     }
 
     private void updateRealmCompositesIfNecessary(String realm, RoleRepresentation role) {
         Optional.ofNullable(role.getComposites())
                 .flatMap(composites -> Optional.ofNullable(composites.getRealm()))
                 .ifPresent(realmComposites -> updateRealmComposites(realm, role, realmComposites));
+    }
+
+    private void updateClientCompositesIfNecessary(String realm, RoleRepresentation role) {
+        Optional.ofNullable(role.getComposites())
+                .flatMap(composites -> Optional.ofNullable(composites.getClient()))
+                .ifPresent(clientComposites -> updateClientComposites(realm, role, clientComposites));
     }
 
     private void updateRealmComposites(String realm, RoleRepresentation role, Set<String> realmComposites) {
@@ -71,6 +75,23 @@ public class RoleRepository {
                 .collect(Collectors.toList());
 
         roleResource.addComposites(realmRoles);
+    }
+
+    private void updateClientComposites(String realm, RoleRepresentation role, Map<String, List<String>> clientComposites) {
+        RoleResource roleResource = realmRepository.loadRealm(realm)
+                .roles()
+                .get(role.getName());
+
+        for (Map.Entry<String, List<String>> compositesByClient : clientComposites.entrySet()) {
+            String clientId = compositesByClient.getKey();
+            List<String> composites = compositesByClient.getValue();
+
+            List<RoleRepresentation> clientRoles = composites.stream()
+                    .map(roleName -> getClientRole(realm, clientId, roleName))
+                    .collect(Collectors.toList());
+
+            roleResource.addComposites(clientRoles);
+        }
     }
 
     public void updateRealmRole(String realm, RoleRepresentation roleToUpdate) {
@@ -208,5 +229,20 @@ public class RoleRepository {
                 .listEffective();
 
         return roles.stream().map(RoleRepresentation::getName).collect(Collectors.toList());
+    }
+
+    private RoleRepresentation getClientRole(String realm, String clientId, String roleName) {
+        ClientRepresentation client = clientRepository.getClient(realm, clientId);
+        RealmResource realmResource = realmRepository.loadRealm(realm);
+
+        List<RoleRepresentation> clientRoles = realmResource.clients()
+                .get(client.getId())
+                .roles()
+                .list();
+
+        return clientRoles.stream()
+                .filter(r -> r.getName().equals(roleName))
+                .findFirst()
+                .get();
     }
 }

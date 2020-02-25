@@ -9,6 +9,7 @@ import com.github.borisskert.keycloak.config.service.KeycloakImportProvider;
 import com.github.borisskert.keycloak.config.service.KeycloakProvider;
 import com.github.borisskert.keycloak.config.service.RealmImportService;
 import com.github.borisskert.keycloak.config.util.KeycloakRepository;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import org.hamcrest.MatcherAssert;
@@ -98,6 +99,7 @@ public class ImportRolesIT {
         shouldChangeUserRemoveRealmRole();
         shouldChangeUserRemoveClientRole();
         shouldAddCompositeRealmRole();
+        shouldAddCompositeClientRole();
     }
 
     private void shouldCreateRealmWithRoles() throws Exception {
@@ -320,6 +322,31 @@ public class ImportRolesIT {
         MatcherAssert.assertThat(composites, Matchers.is(not(nullValue())));
         MatcherAssert.assertThat(composites.getRealm(), Matchers.is(equalTo(ImmutableSet.of("my_realm_role"))));
         MatcherAssert.assertThat(composites.getClient(), Matchers.is(nullValue()));
+    }
+
+    private void shouldAddCompositeClientRole() throws Exception {
+        doImport("12_update_realm__add_composite_client_role.json");
+
+        RealmRepresentation createdRealm = keycloakProvider.get().realm(REALM_NAME).toRepresentation();
+
+        assertThat(createdRealm.getRealm(), is(REALM_NAME));
+        assertThat(createdRealm.isEnabled(), is(true));
+
+        RoleRepresentation realmRole = getRealmRole(
+                "my_composite_client_role"
+        );
+
+        assertThat(realmRole.getName(), is("my_composite_client_role"));
+        assertThat(realmRole.isComposite(), is(true));
+        assertThat(realmRole.getClientRole(), is(false));
+        assertThat(realmRole.getDescription(), is("My added composite client role"));
+
+        RoleRepresentation.Composites composites = realmRole.getComposites();
+        MatcherAssert.assertThat(composites, Matchers.is(not(nullValue())));
+        MatcherAssert.assertThat(composites.getRealm(), Matchers.is(nullValue()));
+        MatcherAssert.assertThat(composites.getClient(), Matchers.is(equalTo(ImmutableMap.of(
+                "moped-client", ImmutableList.of("my_client_role")
+        ))));
     }
 
     private RoleRepresentation getRealmRole(String roleName) {
