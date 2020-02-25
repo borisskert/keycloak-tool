@@ -11,6 +11,8 @@ import com.github.borisskert.keycloak.config.util.KeycloakRepository;
 import com.github.borisskert.keycloak.config.util.ResourceLoader;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -124,6 +126,7 @@ public class ImportGroupsIT {
         shouldUpdateRealmUpdateGroupUpdateSubGroupInSubGroup();
         shouldUpdateRealmUpdateGroupDeleteSubGroupInSubGroup();
         shouldUpdateRealmUpdateGroupDeleteSubGroup();
+        shouldUpdateRealmDeleteGroup();
     }
 
     private void shouldCreateRealmWithGroups() throws Exception {
@@ -1724,6 +1727,19 @@ public class ImportGroupsIT {
         assertThat(updatedGroup.getSubGroups(), hasSize(0));
     }
 
+    private void shouldUpdateRealmDeleteGroup() throws Exception {
+        GroupRepresentation updatedGroup = tryToLoadGroup("/My Added Group").get();
+        MatcherAssert.assertThat(updatedGroup.getName(), Matchers.is(Matchers.equalTo("My Added Group")));
+
+        doImport("43_update_realm_delete_group.json");
+
+        RealmRepresentation realm = keycloakProvider.get().realm(REALM_NAME).toRepresentation();
+
+        assertThat(realm.getRealm(), is(REALM_NAME));
+
+        assertThat(tryToLoadGroup("/My Added Group").isPresent(), is(false));
+    }
+
     private GroupRepresentation loadGroup(String groupPath) {
         GroupsResource groupsResource = keycloakProvider.get()
                 .realm(REALM_NAME)
@@ -1739,6 +1755,22 @@ public class ImportGroupsIT {
         return groupsResource
                 .group(groupRepresentation.getId())
                 .toRepresentation();
+    }
+
+    private Optional<GroupRepresentation> tryToLoadGroup(String groupPath) {
+        GroupsResource groupsResource = keycloakProvider.get()
+                .realm(REALM_NAME)
+                .groups();
+
+        return groupsResource
+                .groups()
+                .stream()
+                .filter(g -> Objects.equals(groupPath, g.getPath()))
+                .findFirst()
+                .map(g -> groupsResource
+                        .group(g.getId())
+                        .toRepresentation()
+                );
     }
 
     private void doImport(String realmImport) {
@@ -1759,7 +1791,7 @@ public class ImportGroupsIT {
 
     private <T> List<T> sorted(List<T> unsorted) {
         ArrayList<T> toSort = new ArrayList<>(unsorted);
-        Collections.sort((List)toSort);
+        Collections.sort((List) toSort);
 
         return toSort;
     }
@@ -1768,7 +1800,7 @@ public class ImportGroupsIT {
         Map<String, List<T>> toSort = new HashMap<>(unsorted);
 
         for (List<T> value : toSort.values()) {
-            Collections.sort((List)value);
+            Collections.sort((List) value);
         }
 
         return toSort;

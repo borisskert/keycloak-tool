@@ -44,6 +44,13 @@ public class GroupRepository {
                 .findFirst();
     }
 
+    public List<GroupRepresentation> getGroups(String realm) {
+        GroupsResource groupsResource = realmRepository.loadRealm(realm)
+                .groups();
+
+        return groupsResource.groups();
+    }
+
     public Optional<GroupRepresentation> tryToFindGroupByName(String realm, String groupName) {
         GroupsResource groupsResource = realmRepository.loadRealm(realm)
                 .groups();
@@ -209,7 +216,7 @@ public class GroupRepository {
         }
     }
 
-    private void deleteGroup(String realm, String id) {
+    public void deleteGroup(String realm, String id) {
         GroupResource groupResource = loadGroupById(realm, id);
         groupResource.remove();
     }

@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -23,13 +24,31 @@ public class GroupImportService {
     public void importGroups(RealmImport realmImport) {
         List<GroupRepresentation> groups = realmImport.getGroups();
 
-        if (groups == null || groups.isEmpty()) {
+        if (groups == null) {
             logger.debug("No groups to import into realm '{}'", realmImport.getRealm());
         } else {
-            for (GroupRepresentation group : groups) {
-                createOrUpdateRealmGroup(realmImport.getRealm(), group);
+            List<GroupRepresentation> existingGroups = groupRepository.getGroups(realmImport.getRealm());
+
+            if (groups.isEmpty()) {
+                for (GroupRepresentation existingGroup : existingGroups) {
+                    groupRepository.deleteGroup(realmImport.getRealm(), existingGroup.getId());
+                }
+            } else {
+                for (GroupRepresentation existingGroup : existingGroups) {
+                    if (!hasGroupWithName(groups, existingGroup.getName())) {
+                        groupRepository.deleteGroup(realmImport.getRealm(), existingGroup.getId());
+                    }
+                }
+
+                for (GroupRepresentation group : groups) {
+                    createOrUpdateRealmGroup(realmImport.getRealm(), group);
+                }
             }
         }
+    }
+
+    private boolean hasGroupWithName(List<GroupRepresentation> groups, String groupName) {
+        return groups.stream().anyMatch(g -> Objects.equals(g.getName(), groupName));
     }
 
     private void createOrUpdateRealmGroup(String realm, GroupRepresentation group) {
