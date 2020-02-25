@@ -9,6 +9,10 @@ import com.github.borisskert.keycloak.config.service.KeycloakImportProvider;
 import com.github.borisskert.keycloak.config.service.KeycloakProvider;
 import com.github.borisskert.keycloak.config.service.RealmImportService;
 import com.github.borisskert.keycloak.config.util.KeycloakRepository;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,13 +32,13 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.*;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.nullValue;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
 @RunWith(SpringRunner.class)
@@ -93,6 +97,7 @@ public class ImportRolesIT {
         shouldChangeUserAddClientRole();
         shouldChangeUserRemoveRealmRole();
         shouldChangeUserRemoveClientRole();
+        shouldAddCompositeRealmRole();
     }
 
     private void shouldCreateRealmWithRoles() throws Exception {
@@ -294,13 +299,39 @@ public class ImportRolesIT {
         assertThat(userClientLevelRoles, not(hasItem("my_client_role")));
     }
 
-    private RoleRepresentation getRealmRole(String roleName) {
-        RoleResource roleResource = keycloakProvider.get()
-                .realm(REALM_NAME)
-                .roles()
-                .get(roleName);
+    private void shouldAddCompositeRealmRole() throws Exception {
+        doImport("11_update_realm__add_composite_realm_role.json");
 
-        return roleResource.toRepresentation();
+        RealmRepresentation createdRealm = keycloakProvider.get().realm(REALM_NAME).toRepresentation();
+
+        assertThat(createdRealm.getRealm(), is(REALM_NAME));
+        assertThat(createdRealm.isEnabled(), is(true));
+
+        RoleRepresentation realmRole = getRealmRole(
+                "my_composite_realm_role"
+        );
+
+        assertThat(realmRole.getName(), is("my_composite_realm_role"));
+        assertThat(realmRole.isComposite(), is(true));
+        assertThat(realmRole.getClientRole(), is(false));
+        assertThat(realmRole.getDescription(), is("My added composite realm role"));
+
+        RoleRepresentation.Composites composites = realmRole.getComposites();
+        MatcherAssert.assertThat(composites, Matchers.is(not(nullValue())));
+        MatcherAssert.assertThat(composites.getRealm(), Matchers.is(equalTo(ImmutableSet.of("my_realm_role"))));
+        MatcherAssert.assertThat(composites.getClient(), Matchers.is(nullValue()));
+    }
+
+    private RoleRepresentation getRealmRole(String roleName) {
+        return keycloakProvider.get()
+                .realm(REALM_NAME)
+                .partialExport(true, true)
+                .getRoles()
+                .getRealm()
+                .stream()
+                .filter(r -> Objects.equals(r.getName(), roleName))
+                .findFirst()
+                .get();
     }
 
     private RoleRepresentation getClientRole(String clientId, String roleName) {

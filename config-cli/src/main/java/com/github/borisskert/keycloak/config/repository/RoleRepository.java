@@ -12,6 +12,7 @@ import javax.ws.rs.NotFoundException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -50,6 +51,26 @@ public class RoleRepository {
     public void createRealmRole(String realm, RoleRepresentation role) {
         RolesResource rolesResource = realmRepository.loadRealm(realm).roles();
         rolesResource.create(role);
+
+        updateRealmCompositesIfNecessary(realm, role);
+    }
+
+    private void updateRealmCompositesIfNecessary(String realm, RoleRepresentation role) {
+        Optional.ofNullable(role.getComposites())
+                .flatMap(composites -> Optional.ofNullable(composites.getRealm()))
+                .ifPresent(realmComposites -> updateRealmComposites(realm, role, realmComposites));
+    }
+
+    private void updateRealmComposites(String realm, RoleRepresentation role, Set<String> realmComposites) {
+        RoleResource roleResource = realmRepository.loadRealm(realm)
+                .roles()
+                .get(role.getName());
+
+        List<RoleRepresentation> realmRoles = realmComposites.stream()
+                .map(composite -> findRealmRole(realm, composite))
+                .collect(Collectors.toList());
+
+        roleResource.addComposites(realmRoles);
     }
 
     public void updateRealmRole(String realm, RoleRepresentation roleToUpdate) {
