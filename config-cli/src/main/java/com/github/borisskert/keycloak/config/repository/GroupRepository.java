@@ -110,11 +110,11 @@ public class GroupRepository {
         if (clientRoles != null) {
             updateGroupClientRoles(realm, subGroupId, clientRoles);
         }
-//
-//        List<GroupRepresentation> subGroups = group.getSubGroups();
-//        if (subGroups != null) {
-//            updateSubGroups(realm, patchedSubGroup.getId(), subGroups);
-//        }
+
+        List<GroupRepresentation> subGroups = subGroup.getSubGroups();
+        if (subGroups != null) {
+            updateSubGroups(realm, subGroupId, subGroups);
+        }
     }
 
     private GroupRepresentation loadSubGroupByName(String realm, String parentGroupId, String name) {
