@@ -100,6 +100,9 @@ public class RoleRepository {
                 .get(roleToUpdate.getName());
 
         roleResource.update(roleToUpdate);
+
+        updateRealmCompositesIfNecessary(realm, roleToUpdate);
+        updateClientCompositesIfNecessary(realm, roleToUpdate);
     }
 
     public RoleRepresentation findRealmRole(String realm, String roleName) {
