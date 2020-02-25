@@ -194,6 +194,12 @@ public class GroupRepository {
 
         List<GroupRepresentation> existingSubGroups = existingGroup.getSubGroups();
 
+        for (GroupRepresentation existingSubGroup : existingSubGroups) {
+            if (!hasGroupWithName(subGroups, existingSubGroup.getName())) {
+                deleteGroup(realm, existingSubGroup.getId());
+            }
+        }
+
         for (GroupRepresentation subGroup : subGroups) {
             if (!hasGroupWithName(existingSubGroups, subGroup.getName())) {
                 addSubGroup(realm, parentGroupId, subGroup);
@@ -203,12 +209,13 @@ public class GroupRepository {
         }
     }
 
-    private boolean hasGroupWithName(List<GroupRepresentation> groups, String groupName) {
-        return groups.stream().anyMatch(g -> Objects.equals(g.getName(), groupName));
+    private void deleteGroup(String realm, String id) {
+        GroupResource groupResource = loadGroupById(realm, id);
+        groupResource.remove();
     }
 
-    private boolean hasRealmRoleWithName(List<RoleRepresentation> roles, String roleName) {
-        return roles.stream().anyMatch(g -> Objects.equals(g.getName(), roleName));
+    private boolean hasGroupWithName(List<GroupRepresentation> groups, String groupName) {
+        return groups.stream().anyMatch(g -> Objects.equals(g.getName(), groupName));
     }
 
     private void updateGroupRealmRoles(String realm, String groupId, List<String> realmRoles) {
