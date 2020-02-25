@@ -76,6 +76,11 @@
             <groupId>eu.codearte.catch-exception</groupId>
             <artifactId>catch-exception</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
