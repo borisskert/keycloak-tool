@@ -65,6 +65,14 @@ public class RoleRepository {
         roleResource.addComposites(realmRoles);
     }
 
+    public Set<RoleRepresentation> findRealmRoleRealmComposites(String realm, String roleName) {
+        RoleResource roleResource = realmRepository.loadRealm(realm)
+                .roles()
+                .get(roleName);
+
+        return roleResource.getRealmRoleComposites();
+    }
+
     public void addClientRoleRealmComposites(
             String realm,
             String roleClientId,
@@ -86,6 +94,22 @@ public class RoleRepository {
         roleResource.addComposites(realmRoles);
     }
 
+    public Set<RoleRepresentation> findClientRoleRealmComposites(
+            String realm,
+            String roleClientId,
+            String roleName
+    ) {
+        ClientRepresentation client = clientRepository.getClient(realm, roleClientId);
+
+        RoleResource roleResource = realmRepository.loadRealm(realm)
+                .clients()
+                .get(client.getId())
+                .roles()
+                .get(roleName);
+
+        return roleResource.getRealmRoleComposites();
+    }
+
     public void addRealmRoleClientComposites(String realm, String roleName, String compositeClientId, Collection<String> clientRoles) {
         RoleResource roleResource = realmRepository.loadRealm(realm)
                 .roles()
@@ -96,6 +120,14 @@ public class RoleRepository {
                 .collect(Collectors.toList());
 
         roleResource.addComposites(realmRoles);
+    }
+
+    public Set<RoleRepresentation> findRealmRoleClientComposites(String realm, String roleName, String compositeClientId) {
+        RoleResource roleResource = realmRepository.loadRealm(realm)
+                .roles()
+                .get(roleName);
+
+        return roleResource.getClientRoleComposites(compositeClientId);
     }
 
     public void addClientRoleClientComposites(
@@ -118,6 +150,23 @@ public class RoleRepository {
                 .collect(Collectors.toList());
 
         roleResource.addComposites(clientRoles);
+    }
+
+    public Set<RoleRepresentation> findClientRoleClientComposites(
+            String realm,
+            String roleClientId,
+            String roleName,
+            String compositeClientId
+    ) {
+        ClientRepresentation client = clientRepository.getClient(realm, roleClientId);
+
+        RoleResource roleResource = realmRepository.loadRealm(realm)
+                .clients()
+                .get(client.getId())
+                .roles()
+                .get(roleName);
+
+        return roleResource.getClientRoleComposites(compositeClientId);
     }
 
     public void updateRealmRole(String realm, RoleRepresentation roleToUpdate) {

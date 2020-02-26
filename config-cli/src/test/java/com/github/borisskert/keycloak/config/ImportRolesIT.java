@@ -99,11 +99,11 @@ public class ImportRolesIT {
         shouldChangeUserAddClientRole();
         shouldChangeUserRemoveRealmRole();
         shouldChangeUserRemoveClientRole();
-        shouldAddCompositeRealmRole();
-        shouldAddCompositeClientRole();
-        shouldAddRealmCompositeToRole();
-        shouldAddClientCompositeToRole();
-        shouldAddCompositeClientToRole();
+        shouldAddRealmRoleWithRealmComposite();
+        shouldAddRealmRoleWitgClientComposite();
+        shouldAddRealmCompositeToRealmRole();
+        shouldAddClientCompositeToRealmRole();
+        shouldAddCompositeClientToRealmRole();
     }
 
     private void shouldCreateRealmWithRoles() throws Exception {
@@ -305,8 +305,8 @@ public class ImportRolesIT {
         assertThat(userClientLevelRoles, not(hasItem("my_client_role")));
     }
 
-    private void shouldAddCompositeRealmRole() throws Exception {
-        doImport("11_update_realm__add_composite_realm_role.json");
+    private void shouldAddRealmRoleWithRealmComposite() throws Exception {
+        doImport("11_update_realm__add_realm_role_with_realm_composite.json");
 
         RealmRepresentation createdRealm = keycloakProvider.get().realm(REALM_NAME).toRepresentation();
 
@@ -328,8 +328,8 @@ public class ImportRolesIT {
         MatcherAssert.assertThat(composites.getClient(), Matchers.is(nullValue()));
     }
 
-    private void shouldAddCompositeClientRole() throws Exception {
-        doImport("12_update_realm__add_composite_client_role.json");
+    private void shouldAddRealmRoleWitgClientComposite() throws Exception {
+        doImport("12_update_realm__add_realm_role_with_client_composite.json");
 
         RealmRepresentation createdRealm = keycloakProvider.get().realm(REALM_NAME).toRepresentation();
 
@@ -353,8 +353,8 @@ public class ImportRolesIT {
         ))));
     }
 
-    private void shouldAddRealmCompositeToRole() throws Exception {
-        doImport("13_update_realm__add_realm_composite_to_role.json");
+    private void shouldAddRealmCompositeToRealmRole() throws Exception {
+        doImport("13_update_realm__add_realm_composite_to_realm_role.json");
 
         RealmRepresentation createdRealm = keycloakProvider.get().realm(REALM_NAME).toRepresentation();
 
@@ -376,8 +376,8 @@ public class ImportRolesIT {
         MatcherAssert.assertThat(composites.getClient(), Matchers.is(nullValue()));
     }
 
-    private void shouldAddClientCompositeToRole() throws Exception {
-        doImport("14_update_realm__add_client_composite_to_role.json");
+    private void shouldAddClientCompositeToRealmRole() throws Exception {
+        doImport("14_update_realm__add_client_composite_to_realm_role.json");
 
         RealmRepresentation createdRealm = keycloakProvider.get().realm(REALM_NAME).toRepresentation();
 
@@ -401,9 +401,9 @@ public class ImportRolesIT {
         ))));
     }
 
-    private void shouldAddCompositeClientToRole() throws Exception {
-        doImport("15_update_realm__add_composite_client_to_role.json");
-        // TODO create all roles before updating composites
+    private void shouldAddCompositeClientToRealmRole() throws Exception {
+        doImport("15_update_realm__add_composite_client_to_realm_role.json");
+
         RealmRepresentation createdRealm = keycloakProvider.get().realm(REALM_NAME).toRepresentation();
 
         assertThat(createdRealm.getRealm(), is(REALM_NAME));
