@@ -263,7 +263,6 @@ public class ImportScopeMappingsIT {
 
         List<ScopeMappingRepresentation> scopeMappings = realm.getScopeMappings();
 
-        System.out.println(new ObjectMapper().writeValueAsString(scopeMappings));
         assertThat(scopeMappings, is(nullValue()));
     }
 

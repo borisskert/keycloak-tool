@@ -9,6 +9,7 @@ import com.github.borisskert.keycloak.config.service.KeycloakImportProvider;
 import com.github.borisskert.keycloak.config.service.KeycloakProvider;
 import com.github.borisskert.keycloak.config.service.RealmImportService;
 import com.github.borisskert.keycloak.config.util.KeycloakRepository;
+import com.github.borisskert.keycloak.config.util.SortUtils;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -102,6 +103,7 @@ public class ImportRolesIT {
         shouldAddCompositeClientRole();
         shouldAddRealmCompositeToRole();
         shouldAddClientCompositeToRole();
+        shouldAddCompositeClientToRole();
     }
 
     private void shouldCreateRealmWithRoles() throws Exception {
@@ -394,8 +396,34 @@ public class ImportRolesIT {
         RoleRepresentation.Composites composites = realmRole.getComposites();
         MatcherAssert.assertThat(composites, Matchers.is(not(nullValue())));
         MatcherAssert.assertThat(composites.getRealm(), Matchers.is(nullValue()));
-        MatcherAssert.assertThat(composites.getClient(), Matchers.is(equalTo(ImmutableMap.of(
+        MatcherAssert.assertThat(SortUtils.sorted(composites.getClient()), Matchers.is(equalTo(ImmutableMap.of(
                 "moped-client", ImmutableList.of("my_client_role", "my_other_client_role")
+        ))));
+    }
+
+    private void shouldAddCompositeClientToRole() throws Exception {
+        doImport("15_update_realm__add_composite_client_to_role.json");
+        // TODO create all roles before updating composites
+        RealmRepresentation createdRealm = keycloakProvider.get().realm(REALM_NAME).toRepresentation();
+
+        assertThat(createdRealm.getRealm(), is(REALM_NAME));
+        assertThat(createdRealm.isEnabled(), is(true));
+
+        RoleRepresentation realmRole = getRealmRole(
+                "my_composite_client_role"
+        );
+
+        assertThat(realmRole.getName(), is("my_composite_client_role"));
+        assertThat(realmRole.isComposite(), is(true));
+        assertThat(realmRole.getClientRole(), is(false));
+        assertThat(realmRole.getDescription(), is("My added composite client role"));
+
+        RoleRepresentation.Composites composites = realmRole.getComposites();
+        MatcherAssert.assertThat(composites, Matchers.is(not(nullValue())));
+        MatcherAssert.assertThat(composites.getRealm(), Matchers.is(nullValue()));
+        MatcherAssert.assertThat(SortUtils.sorted(composites.getClient()), Matchers.is(equalTo(ImmutableMap.of(
+                "moped-client", ImmutableList.of("my_client_role", "my_other_client_role"),
+                "second-moped-client", ImmutableList.of("my_other_second_client_role", "my_second_client_role")
         ))));
     }
 

@@ -9,7 +9,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.ws.rs.NotFoundException;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -48,50 +51,73 @@ public class RoleRepository {
     public void createRealmRole(String realm, RoleRepresentation role) {
         RolesResource rolesResource = realmRepository.loadRealm(realm).roles();
         rolesResource.create(role);
-
-        updateRealmCompositesIfNecessary(realm, role);
-        updateClientCompositesIfNecessary(realm, role);
     }
 
-    private void updateRealmCompositesIfNecessary(String realm, RoleRepresentation role) {
-        Optional.ofNullable(role.getComposites())
-                .flatMap(composites -> Optional.ofNullable(composites.getRealm()))
-                .ifPresent(realmComposites -> updateRealmComposites(realm, role, realmComposites));
-    }
-
-    private void updateClientCompositesIfNecessary(String realm, RoleRepresentation role) {
-        Optional.ofNullable(role.getComposites())
-                .flatMap(composites -> Optional.ofNullable(composites.getClient()))
-                .ifPresent(clientComposites -> updateClientComposites(realm, role, clientComposites));
-    }
-
-    private void updateRealmComposites(String realm, RoleRepresentation role, Set<String> realmComposites) {
+    public void addRealmRoleRealmComposites(String realm, String roleName, Set<String> realmComposites) {
         RoleResource roleResource = realmRepository.loadRealm(realm)
                 .roles()
-                .get(role.getName());
+                .get(roleName);
 
         List<RoleRepresentation> realmRoles = realmComposites.stream()
-                .map(composite -> findRealmRole(realm, composite))
+                .map(realmRoleName -> findRealmRole(realm, realmRoleName))
                 .collect(Collectors.toList());
 
         roleResource.addComposites(realmRoles);
     }
 
-    private void updateClientComposites(String realm, RoleRepresentation role, Map<String, List<String>> clientComposites) {
+    public void addClientRoleRealmComposites(
+            String realm,
+            String roleClientId,
+            String roleName,
+            Set<String> realmComposites
+    ) {
+        ClientRepresentation client = clientRepository.getClient(realm, roleClientId);
+
+        RoleResource roleResource = realmRepository.loadRealm(realm)
+                .clients()
+                .get(client.getId())
+                .roles()
+                .get(roleName);
+
+        List<RoleRepresentation> realmRoles = realmComposites.stream()
+                .map(realmRoleName -> findRealmRole(realm, realmRoleName))
+                .collect(Collectors.toList());
+
+        roleResource.addComposites(realmRoles);
+    }
+
+    public void addRealmRoleClientComposites(String realm, String roleName, String compositeClientId, Collection<String> clientRoles) {
         RoleResource roleResource = realmRepository.loadRealm(realm)
                 .roles()
-                .get(role.getName());
+                .get(roleName);
 
-        for (Map.Entry<String, List<String>> compositesByClient : clientComposites.entrySet()) {
-            String clientId = compositesByClient.getKey();
-            List<String> composites = compositesByClient.getValue();
+        List<RoleRepresentation> realmRoles = clientRoles.stream()
+                .map(clientRoleName -> findClientRole(realm, compositeClientId, clientRoleName))
+                .collect(Collectors.toList());
 
-            List<RoleRepresentation> clientRoles = composites.stream()
-                    .map(roleName -> getClientRole(realm, clientId, roleName))
-                    .collect(Collectors.toList());
+        roleResource.addComposites(realmRoles);
+    }
 
-            roleResource.addComposites(clientRoles);
-        }
+    public void addClientRoleClientComposites(
+            String realm,
+            String roleClientId,
+            String roleName,
+            String compositeClientId,
+            Collection<String> clientComposites
+    ) {
+        ClientRepresentation client = clientRepository.getClient(realm, roleClientId);
+
+        RoleResource roleResource = realmRepository.loadRealm(realm)
+                .clients()
+                .get(client.getId())
+                .roles()
+                .get(roleName);
+
+        List<RoleRepresentation> clientRoles = clientComposites.stream()
+                .map(clientRoleName -> findClientRole(realm, compositeClientId, clientRoleName))
+                .collect(Collectors.toList());
+
+        roleResource.addComposites(clientRoles);
     }
 
     public void updateRealmRole(String realm, RoleRepresentation roleToUpdate) {
@@ -100,9 +126,6 @@ public class RoleRepository {
                 .get(roleToUpdate.getName());
 
         roleResource.update(roleToUpdate);
-
-        updateRealmCompositesIfNecessary(realm, roleToUpdate);
-        updateClientCompositesIfNecessary(realm, roleToUpdate);
     }
 
     public RoleRepresentation findRealmRole(String realm, String roleName) {
@@ -132,6 +155,21 @@ public class RoleRepository {
         return clientRoles.stream()
                 .filter(r -> r.getName().equals(roleName))
                 .findFirst();
+    }
+
+    public RoleRepresentation findClientRole(String realm, String clientId, String roleName) {
+        ClientRepresentation client = clientRepository.getClient(realm, clientId);
+        RealmResource realmResource = realmRepository.loadRealm(realm);
+
+        List<RoleRepresentation> clientRoles = realmResource.clients()
+                .get(client.getId())
+                .roles()
+                .list();
+
+        return clientRoles.stream()
+                .filter(r -> r.getName().equals(roleName))
+                .findFirst()
+                .get();
     }
 
     public List<RoleRepresentation> searchClientRoles(String realm, String clientId, List<String> roles) {

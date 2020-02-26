@@ -1,7 +1,7 @@
 package com.github.borisskert.keycloak.config.service;
 
-import com.github.borisskert.keycloak.config.repository.RoleRepository;
 import com.github.borisskert.keycloak.config.model.RealmImport;
+import com.github.borisskert.keycloak.config.repository.RoleRepository;
 import com.github.borisskert.keycloak.config.util.CloneUtils;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.RolesRepresentation;
@@ -30,6 +30,9 @@ public class RoleImportService {
     public void doImport(RealmImport realmImport) {
         createOrUpdateRealmRoles(realmImport);
         createOrUpdateClientRoles(realmImport);
+
+        updateRealmRoleComposites(realmImport);
+        updateClientRoleComposites(realmImport);
     }
 
     private void createOrUpdateRealmRoles(RealmImport realmImport) {
@@ -74,6 +77,33 @@ public class RoleImportService {
         }
     }
 
+    private void updateRealmRoleComposites(RealmImport realmImport) {
+        String realm = realmImport.getRealm();
+        RolesRepresentation roles = realmImport.getRoles();
+        List<RoleRepresentation> realmRoles = roles.getRealm();
+
+        for (RoleRepresentation realmRole : realmRoles) {
+            updateRealmRoleRealmCompositesIfNecessary(realm, realmRole);
+            updateRealmRoleClientCompositesIfNecessary(realm, realmRole);
+        }
+    }
+
+    private void updateClientRoleComposites(RealmImport realmImport) {
+        String realm = realmImport.getRealm();
+        RolesRepresentation roles = realmImport.getRoles();
+
+        Map<String, List<RoleRepresentation>> clientRolesPerClient = roles.getClient();
+
+        for (Map.Entry<String, List<RoleRepresentation>> clientRoles : clientRolesPerClient.entrySet()) {
+            String clientId = clientRoles.getKey();
+
+            for (RoleRepresentation clientRole : clientRoles.getValue()) {
+                updateClientRoleRealmCompositesIfNecessary(realm, clientId, clientRole);
+                updateClientRoleClientCompositesIfNecessary(realm, clientId, clientRole);
+            }
+        }
+    }
+
     private void createOrUpdateClientRole(RealmImport realmImport, String clientId, RoleRepresentation role) {
         String roleName = role.getName();
         String realm = realmImport.getRealm();
@@ -97,5 +127,52 @@ public class RoleImportService {
     private void updateClientRole(String realm, String clientId, RoleRepresentation existingRole, RoleRepresentation roleToImport) {
         RoleRepresentation patchedRole = CloneUtils.deepPatch(existingRole, roleToImport);
         roleRepository.updateClientRole(realm, clientId, patchedRole);
+    }
+
+    private void updateRealmRoleRealmCompositesIfNecessary(String realm, RoleRepresentation realmRole) {
+        Optional.ofNullable(realmRole.getComposites())
+                .flatMap(composites -> Optional.ofNullable(composites.getRealm()))
+                .ifPresent(realmComposites -> roleRepository.addRealmRoleRealmComposites(
+                        realm,
+                        realmRole.getName(),
+                        realmComposites
+                ));
+    }
+
+    private void updateClientRoleRealmCompositesIfNecessary(String realm, String roleClientId, RoleRepresentation clientRole) {
+        Optional.ofNullable(clientRole.getComposites())
+                .flatMap(composites -> Optional.ofNullable(composites.getRealm()))
+                .ifPresent(realmComposites -> roleRepository.addClientRoleRealmComposites(
+                        realm,
+                        roleClientId,
+                        clientRole.getName(),
+                        realmComposites
+                ));
+    }
+
+    private void updateRealmRoleClientCompositesIfNecessary(String realm, RoleRepresentation realmRole) {
+        Optional.ofNullable(realmRole.getComposites())
+                .flatMap(composites -> Optional.ofNullable(composites.getClient()))
+                .ifPresent(clientComposites -> {
+                    for (Map.Entry<String, List<String>> clientCompositesByClients : clientComposites.entrySet()) {
+                        String clientId = clientCompositesByClients.getKey();
+                        List<String> clientCompositesByClient = clientCompositesByClients.getValue();
+
+                        roleRepository.addRealmRoleClientComposites(realm, realmRole.getName(), clientId, clientCompositesByClient);
+                    }
+                });
+    }
+
+    private void updateClientRoleClientCompositesIfNecessary(String realm, String roleClientId, RoleRepresentation clientRole) {
+        Optional.ofNullable(clientRole.getComposites())
+                .flatMap(composites -> Optional.ofNullable(composites.getClient()))
+                .ifPresent(clientComposites -> {
+                    for (Map.Entry<String, List<String>> clientCompositesByClients : clientComposites.entrySet()) {
+                        String clientId = clientCompositesByClients.getKey();
+                        List<String> clientCompositesByClient = clientCompositesByClients.getValue();
+
+                        roleRepository.addClientRoleClientComposites(realm, roleClientId, clientRole.getName(), clientId, clientCompositesByClient);
+                    }
+                });
     }
 }
