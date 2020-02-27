@@ -134,12 +134,26 @@ public class RoleRepository {
         roleResource.addComposites(realmRoles);
     }
 
+    public void removeRealmRoleClientComposites(String realm, String roleName, String compositeClientId, Collection<String> clientRoleNames) {
+        RoleResource roleResource = realmRepository.loadRealm(realm)
+                .roles()
+                .get(roleName);
+
+        List<RoleRepresentation> clientRoles = clientRoleNames.stream()
+                .map(clientRoleName -> findClientRole(realm, compositeClientId, clientRoleName))
+                .collect(Collectors.toList());
+
+        roleResource.deleteComposites(clientRoles);
+    }
+
     public Set<RoleRepresentation> findRealmRoleClientComposites(String realm, String roleName, String compositeClientId) {
         RoleResource roleResource = realmRepository.loadRealm(realm)
                 .roles()
                 .get(roleName);
 
-        return roleResource.getClientRoleComposites(compositeClientId);
+        ClientRepresentation client = clientRepository.getClient(realm, compositeClientId);
+
+        return roleResource.getClientRoleComposites(client.getId());
     }
 
     public void addClientRoleClientComposites(
