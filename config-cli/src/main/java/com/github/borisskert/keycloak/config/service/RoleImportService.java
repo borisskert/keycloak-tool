@@ -291,7 +291,17 @@ public class RoleImportService {
             addClientRoleClientComposites(realm, roleClientId, roleName, clientId, existingClientCompositeNames, clientCompositesByClient);
         }
 
-        //removeClientRoleClientComposites(realm, roleName, clientComposites);
+        removeClientRoleClientComposites(realm, roleClientId, roleName, clientComposites);
+    }
+
+    private void removeClientRoleClientComposites(String realm, String roleClientId, String realmRole, Map<String, List<String>> clientComposites) {
+        Set<String> existingCompositeClients = clientRepository.getClientIds(realm);
+
+        Set<String> compositeClientsToRemove = existingCompositeClients.stream()
+                .filter(name -> !clientComposites.containsKey(name))
+                .collect(Collectors.toSet());
+
+        roleRepository.removeClientRoleClientComposites(realm, roleClientId, realmRole, compositeClientsToRemove);
     }
 
     private void addClientRoleClientComposites(String realm, String clientRoleId, String realmRole, String clientId, Set<String> existingClientCompositeNames, List<String> clientCompositesByClient) {
