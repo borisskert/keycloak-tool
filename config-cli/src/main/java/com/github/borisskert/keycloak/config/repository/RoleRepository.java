@@ -1,6 +1,7 @@
 package com.github.borisskert.keycloak.config.repository;
 
 import com.github.borisskert.keycloak.config.exception.KeycloakRepositoryException;
+import com.github.borisskert.keycloak.config.util.MultiValueMap;
 import org.keycloak.admin.client.resource.*;
 import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
@@ -9,10 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.ws.rs.NotFoundException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -146,6 +144,29 @@ public class RoleRepository {
         roleResource.deleteComposites(clientRoles);
     }
 
+    public void removeRealmRoleClientComposites(String realm, String roleName, Set<String> compositeClientsToRemove) {
+        RoleResource roleResource = realmRepository.loadRealm(realm)
+                .roles()
+                .get(roleName);
+
+        Map<String, List<String>> existingClientCompositeNames = findRealmRoleClientComposites(realm, roleName);
+
+        List<RoleRepresentation> clientRolesToRemove = new ArrayList<>();
+        for (String clientId : compositeClientsToRemove) {
+            if (existingClientCompositeNames.containsKey(clientId)) {
+                Set<RoleRepresentation> existingClientComposites =
+                        existingClientCompositeNames.get(clientId)
+                                .stream()
+                                .map(clientRoleName -> findClientRole(realm, clientId, clientRoleName))
+                                .collect(Collectors.toSet());
+
+                clientRolesToRemove.addAll(existingClientComposites);
+            }
+        }
+
+        roleResource.deleteComposites(clientRolesToRemove);
+    }
+
     public Set<RoleRepresentation> findRealmRoleClientComposites(String realm, String roleName, String compositeClientId) {
         RoleResource roleResource = realmRepository.loadRealm(realm)
                 .roles()
@@ -154,6 +175,26 @@ public class RoleRepository {
         ClientRepresentation client = clientRepository.getClient(realm, compositeClientId);
 
         return roleResource.getClientRoleComposites(client.getId());
+    }
+
+    private Map<String, List<String>> findRealmRoleClientComposites(String realm, String roleName) {
+        RealmResource realmResource = realmRepository.loadRealm(realm);
+        RoleResource roleResource = realmResource
+                .roles()
+                .get(roleName);
+
+        List<ClientRepresentation> clients = clientRepository.getClients(realm);
+        MultiValueMap<String, String> clientComposites = new MultiValueMap<>();
+
+        for (ClientRepresentation client : clients) {
+            Set<String> clientRoleComposites = roleResource.getClientRoleComposites(client.getId())
+                    .stream().map(RoleRepresentation::getName)
+                    .collect(Collectors.toSet());
+
+            clientComposites.putAll(client.getClientId(), clientRoleComposites);
+        }
+
+        return clientComposites.toMap();
     }
 
     public void addClientRoleClientComposites(

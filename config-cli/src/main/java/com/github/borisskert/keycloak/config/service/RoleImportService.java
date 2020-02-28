@@ -1,6 +1,7 @@
 package com.github.borisskert.keycloak.config.service;
 
 import com.github.borisskert.keycloak.config.model.RealmImport;
+import com.github.borisskert.keycloak.config.repository.ClientRepository;
 import com.github.borisskert.keycloak.config.repository.RoleRepository;
 import com.github.borisskert.keycloak.config.util.CloneUtils;
 import org.keycloak.representations.idm.RoleRepresentation;
@@ -21,12 +22,15 @@ public class RoleImportService {
     private static final Logger logger = LoggerFactory.getLogger(RoleImportService.class);
 
     private final RoleRepository roleRepository;
+    private final ClientRepository clientRepository;
 
     @Autowired
     public RoleImportService(
-            RoleRepository roleRepository
+            RoleRepository roleRepository,
+            ClientRepository clientRepository
     ) {
         this.roleRepository = roleRepository;
+        this.clientRepository = clientRepository;
     }
 
     public void doImport(RealmImport realmImport) {
@@ -203,6 +207,14 @@ public class RoleImportService {
             removeRealmRoleClientComposites(realm, realmRole, clientId, existingClientCompositeNames, clientCompositesByClient);
             addRealmRoleClientComposites(realm, realmRole, clientId, existingClientCompositeNames, clientCompositesByClient);
         }
+
+        Set<String> existingCompositeClients = clientRepository.getClientIds(realm);
+
+        Set<String> compositeClientsToRemove = existingCompositeClients.stream()
+                .filter(name -> !clientComposites.containsKey(name))
+                .collect(Collectors.toSet());
+
+        roleRepository.removeRealmRoleClientComposites(realm, realmRole, compositeClientsToRemove);
     }
 
     private void addRealmRoleClientComposites(String realm, String realmRole, String clientId, Set<String> existingClientCompositeNames, List<String> clientCompositesByClient) {

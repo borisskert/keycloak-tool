@@ -8,4 +8,4 @@ keycloak:
 
 spring:
   profiles:
-    include: debug
+    include: error
