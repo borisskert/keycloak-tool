@@ -112,6 +112,7 @@ public class ImportRolesIT {
         shouldRemoveRealmCompositeFromRealmRole();
         shouldRemoveCompositeClientFromRealmRole();
         shouldRemoveClientCompositesFromRealmRole();
+        shouldRemoveRealmCompositeFromClientRole();
     }
 
     private void shouldCreateRealmWithRoles() throws Exception {
@@ -634,6 +635,30 @@ public class ImportRolesIT {
         MatcherAssert.assertThat(composites.getClient(), Matchers.is(equalTo(ImmutableMap.of(
                 "moped-client", ImmutableList.of("my_other_client_role")
         ))));
+    }
+
+    private void shouldRemoveRealmCompositeFromClientRole() throws Exception {
+        doImport("24_update_realm__remove_realm_role_composite_from_client_role.json");
+
+        RealmRepresentation createdRealm = keycloakProvider.get().realm(REALM_NAME).toRepresentation();
+
+        assertThat(createdRealm.getRealm(), is(REALM_NAME));
+        assertThat(createdRealm.isEnabled(), is(true));
+
+        RoleRepresentation realmRole = getClientRole(
+                "moped-client",
+                "my_composite_moped_client_role"
+        );
+
+        assertThat(realmRole.getName(), is("my_composite_moped_client_role"));
+        assertThat(realmRole.isComposite(), is(true));
+        assertThat(realmRole.getClientRole(), is(true));
+        assertThat(realmRole.getDescription(), is("My composite moped-client role"));
+
+        RoleRepresentation.Composites composites = realmRole.getComposites();
+        MatcherAssert.assertThat(composites, is(not(nullValue())));
+        MatcherAssert.assertThat(composites.getRealm(), is(ImmutableSet.of("my_other_realm_role")));
+        MatcherAssert.assertThat(composites.getClient(), is(nullValue()));
     }
 
     private RoleRepresentation getRealmRole(String roleName) {
