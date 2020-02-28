@@ -113,6 +113,7 @@ public class ImportRolesIT {
         shouldRemoveCompositeClientFromRealmRole();
         shouldRemoveClientCompositesFromRealmRole();
         shouldRemoveRealmCompositeFromClientRole();
+        shouldRemoveClientCompositeFromClientRole();
     }
 
     private void shouldCreateRealmWithRoles() throws Exception {
@@ -659,6 +660,33 @@ public class ImportRolesIT {
         MatcherAssert.assertThat(composites, is(not(nullValue())));
         MatcherAssert.assertThat(composites.getRealm(), is(ImmutableSet.of("my_other_realm_role")));
         MatcherAssert.assertThat(composites.getClient(), is(nullValue()));
+    }
+
+    private void shouldRemoveClientCompositeFromClientRole() throws Exception {
+        doImport("25_update_realm__remove_client_role_composite_from_client_role.json");
+
+        RealmRepresentation createdRealm = keycloakProvider.get().realm(REALM_NAME).toRepresentation();
+
+        assertThat(createdRealm.getRealm(), is(REALM_NAME));
+        assertThat(createdRealm.isEnabled(), is(true));
+
+        RoleRepresentation realmRole = getClientRole(
+                "moped-client",
+                "my_other_composite_moped_client_role"
+        );
+
+        assertThat(realmRole.getName(), is("my_other_composite_moped_client_role"));
+        assertThat(realmRole.isComposite(), is(true));
+        assertThat(realmRole.getClientRole(), is(true));
+        assertThat(realmRole.getDescription(), is("My other composite moped-client role"));
+
+        RoleRepresentation.Composites composites = realmRole.getComposites();
+        MatcherAssert.assertThat(composites, is(not(nullValue())));
+        MatcherAssert.assertThat(composites.getRealm(), is(nullValue()));
+        MatcherAssert.assertThat(SortUtils.sorted(composites.getClient()), Matchers.is(equalTo(ImmutableMap.of(
+                "moped-client", ImmutableList.of("my_client_role", "my_other_client_role"),
+                "second-moped-client", ImmutableList.of("my_other_second_client_role")
+        ))));
     }
 
     private RoleRepresentation getRealmRole(String roleName) {

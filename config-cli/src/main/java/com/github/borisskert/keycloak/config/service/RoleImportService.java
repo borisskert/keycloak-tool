@@ -277,13 +277,44 @@ public class RoleImportService {
     private void updateClientRoleClientCompositesIfNecessary(String realm, String roleClientId, RoleRepresentation clientRole) {
         Optional.ofNullable(clientRole.getComposites())
                 .flatMap(composites -> Optional.ofNullable(composites.getClient()))
-                .ifPresent(clientComposites -> {
-                    for (Map.Entry<String, List<String>> clientCompositesByClients : clientComposites.entrySet()) {
-                        String clientId = clientCompositesByClients.getKey();
-                        List<String> clientCompositesByClient = clientCompositesByClients.getValue();
+                .ifPresent(clientComposites -> updateClientRoleClientComposites(realm, roleClientId, clientRole.getName(), clientComposites));
+    }
 
-                        roleRepository.addClientRoleClientComposites(realm, roleClientId, clientRole.getName(), clientId, clientCompositesByClient);
-                    }
-                });
+    private void updateClientRoleClientComposites(String realm, String roleClientId, String roleName, Map<String, List<String>> clientComposites) {
+        for (Map.Entry<String, List<String>> clientCompositesByClients : clientComposites.entrySet()) {
+            String clientId = clientCompositesByClients.getKey();
+            List<String> clientCompositesByClient = clientCompositesByClients.getValue();
+
+            Set<String> existingClientCompositeNames = findClientRoleClientCompositeNames(realm, roleClientId, roleName, clientId);
+
+            removeClientRoleClientComposites(realm, roleClientId, roleName, clientId, existingClientCompositeNames, clientCompositesByClient);
+            addClientRoleClientComposites(realm, roleClientId, roleName, clientId, existingClientCompositeNames, clientCompositesByClient);
+        }
+
+        //removeClientRoleClientComposites(realm, roleName, clientComposites);
+    }
+
+    private void addClientRoleClientComposites(String realm, String clientRoleId, String realmRole, String clientId, Set<String> existingClientCompositeNames, List<String> clientCompositesByClient) {
+        Set<String> clientRoleCompositesToAdd = clientCompositesByClient.stream()
+                .filter(name -> !existingClientCompositeNames.contains(name))
+                .collect(Collectors.toSet());
+
+        roleRepository.addClientRoleClientComposites(realm, clientRoleId, realmRole, clientId, clientRoleCompositesToAdd);
+    }
+
+    private void removeClientRoleClientComposites(String realm, String roleClientId, String realmRole, String clientId, Set<String> existingClientCompositeNames, List<String> clientCompositesByClient) {
+        Set<String> clientRoleCompositesToRemove = existingClientCompositeNames.stream()
+                .filter(name -> !clientCompositesByClient.contains(name))
+                .collect(Collectors.toSet());
+
+        roleRepository.removeClientRoleClientComposites(realm, roleClientId, realmRole, clientId, clientRoleCompositesToRemove);
+    }
+
+    private Set<String> findClientRoleClientCompositeNames(String realm, String roleClientId, String realmRole, String clientId) {
+        Set<RoleRepresentation> existingClientComposites = roleRepository.findClientRoleClientComposites(realm, roleClientId, realmRole, clientId);
+
+        return existingClientComposites.stream()
+                .map(RoleRepresentation::getName)
+                .collect(Collectors.toSet());
     }
 }
