@@ -1,4 +1,4 @@
-FROM openjdk:8
+FROM openjdk:11
 
 WORKDIR /tmp/keycloak-tool
 VOLUME /tmp/keycloak-tool/configs
