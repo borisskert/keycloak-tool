@@ -14,7 +14,7 @@ services:
     - "-b"
     - "0.0.0.0"
     - "--debug *:8787"
-  post_process:
+  keycloak-tool:
     build: .
     image: borisskert/keycloak-tool:latest
     depends_on:
@@ -30,4 +30,3 @@ services:
     - WAIT_TIME_IN_SECONDS=120
     - SPRING_PROFILES_INCLUDE=debug
     - IMPORT_FORCE=false
-    command: config-cli
