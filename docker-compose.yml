@@ -7,11 +7,13 @@ services:
       KEYCLOAK_USER: admin
     ports:
     - "8080:8080"
+    - "8443:8443"
     - "8787:8787"
+    - "9990:9990"
     command:
     - "-b"
     - "0.0.0.0"
-    - "--debug"
+    - "--debug *:8787"
   post_process:
     build: .
     image: borisskert/keycloak-tool:latest
