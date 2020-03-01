@@ -1,15 +1,9 @@
 package com.github.borisskert.keycloak.config;
 
 import com.github.borisskert.keycloak.config.configuration.TestConfiguration;
-import com.github.borisskert.keycloak.config.model.KeycloakImport;
-import com.github.borisskert.keycloak.config.model.RealmImport;
-import com.github.borisskert.keycloak.config.service.KeycloakImportProvider;
 import com.github.borisskert.keycloak.config.service.KeycloakProvider;
-import com.github.borisskert.keycloak.config.service.RealmImportService;
-import com.github.borisskert.keycloak.config.util.ResourceLoader;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import com.github.borisskert.keycloak.config.util.KeycloakImportUtil;
+import org.junit.jupiter.api.*;
 import org.keycloak.representations.idm.RealmRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.ConfigFileApplicationContextInitializer;
@@ -18,12 +12,8 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 
-import java.io.File;
-import java.util.Map;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.nullValue;
 
 @SpringBootTest
@@ -33,24 +23,19 @@ import static org.hamcrest.core.IsNull.nullValue;
 )
 @ActiveProfiles("IT")
 @DirtiesContext
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ImportSimpleRealmIT {
     private static final String REALM_NAME = "simple";
 
     @Autowired
-    RealmImportService realmImportService;
-
-    @Autowired
-    KeycloakImportProvider keycloakImportProvider;
-
-    @Autowired
     KeycloakProvider keycloakProvider;
 
-    KeycloakImport keycloakImport;
+    @Autowired
+    KeycloakImportUtil importUtil;
 
     @BeforeEach
     public void setup() throws Exception {
-        File configsFolder = ResourceLoader.loadResource("import-files/simple-realm");
-        this.keycloakImport = keycloakImportProvider.readRealmImportsFromDirectory(configsFolder);
+        importUtil.workdir("import-files/simple-realm");
     }
 
     @AfterEach
@@ -59,19 +44,8 @@ public class ImportSimpleRealmIT {
     }
 
     @Test
-    public void shouldReadImports() {
-        assertThat(keycloakImport, is(not(nullValue())));
-    }
-
-    @Test
-    public void integrationTests() throws Exception {
-        shouldCreateSimpleRealm();
-        shouldNotUpdateSimpleRealm();
-        shouldUpdateSimpleRealm();
-        shouldCreateSimpleRealmWithLoginTheme();
-    }
-
-    private void shouldCreateSimpleRealm() throws Exception {
+    @Order(0)
+    void shouldCreateSimpleRealm() throws Exception {
         doImport("0_create_simple-realm.json");
 
         RealmRepresentation createdRealm = keycloakProvider.get().realm(REALM_NAME).toRepresentation();
@@ -85,7 +59,9 @@ public class ImportSimpleRealmIT {
         );
     }
 
-    private void shouldNotUpdateSimpleRealm() throws Exception {
+    @Test
+    @Order(1)
+    void shouldNotUpdateSimpleRealm() throws Exception {
         doImport("0.1_update_simple-realm_with_same_config.json");
 
         RealmRepresentation createdRealm = keycloakProvider.get().realm(REALM_NAME).toRepresentation();
@@ -99,7 +75,9 @@ public class ImportSimpleRealmIT {
         );
     }
 
-    private void shouldUpdateSimpleRealm() throws Exception {
+    @Test
+    @Order(2)
+    void shouldUpdateSimpleRealm() throws Exception {
         doImport("1_update_login-theme_to_simple-realm.json");
 
         RealmRepresentation updatedRealm = keycloakProvider.get().realm(REALM_NAME).toRepresentation();
@@ -113,7 +91,9 @@ public class ImportSimpleRealmIT {
         );
     }
 
-    private void shouldCreateSimpleRealmWithLoginTheme() throws Exception {
+    @Test
+    @Order(3)
+    void shouldCreateSimpleRealmWithLoginTheme() throws Exception {
         doImport("2_create_simple-realm_with_login-theme.json");
 
         RealmRepresentation createdRealm = keycloakProvider.get().realm("simpleWithLoginTheme").toRepresentation();
@@ -128,18 +108,6 @@ public class ImportSimpleRealmIT {
     }
 
     private void doImport(String realmImport) {
-        RealmImport foundImport = getImport(realmImport);
-        realmImportService.doImport(foundImport);
-    }
-
-    private RealmImport getImport(String importName) {
-        Map<String, RealmImport> realmImports = keycloakImport.getRealmImports();
-
-        return realmImports.entrySet()
-                .stream()
-                .filter(e -> e.getKey().equals(importName))
-                .map(Map.Entry::getValue)
-                .findFirst()
-                .get();
+        importUtil.doImport(realmImport);
     }
 }

@@ -1,15 +1,9 @@
 package com.github.borisskert.keycloak.config;
 
 import com.github.borisskert.keycloak.config.configuration.TestConfiguration;
-import com.github.borisskert.keycloak.config.util.ResourceLoader;
-import com.github.borisskert.keycloak.config.model.KeycloakImport;
-import com.github.borisskert.keycloak.config.model.RealmImport;
-import com.github.borisskert.keycloak.config.service.KeycloakImportProvider;
 import com.github.borisskert.keycloak.config.service.KeycloakProvider;
-import com.github.borisskert.keycloak.config.service.RealmImportService;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import com.github.borisskert.keycloak.config.util.KeycloakImportUtil;
+import org.junit.jupiter.api.*;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.common.util.MultivaluedHashMap;
 import org.keycloak.representations.idm.ComponentExportRepresentation;
@@ -21,11 +15,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
 
-import java.io.File;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -33,8 +24,6 @@ import java.util.stream.Collectors;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsNot.not;
-import static org.hamcrest.core.IsNull.nullValue;
 
 @SpringBootTest
 @ContextConfiguration(
@@ -43,24 +32,19 @@ import static org.hamcrest.core.IsNull.nullValue;
 )
 @ActiveProfiles("IT")
 @DirtiesContext
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ImportComponentsIT {
     private static final String REALM_NAME = "realmWithComponents";
 
     @Autowired
-    RealmImportService realmImportService;
-
-    @Autowired
-    KeycloakImportProvider keycloakImportProvider;
-
-    @Autowired
     KeycloakProvider keycloakProvider;
 
-    KeycloakImport keycloakImport;
+    @Autowired
+    KeycloakImportUtil importUtil;
 
     @BeforeEach
     public void setup() throws Exception {
-        File configsFolder = ResourceLoader.loadResource("import-files/components");
-        this.keycloakImport = keycloakImportProvider.readRealmImportsFromDirectory(configsFolder);
+        importUtil.workdir("import-files/components");
     }
 
     @AfterEach
@@ -69,21 +53,8 @@ public class ImportComponentsIT {
     }
 
     @Test
-    public void shouldReadImports() {
-        assertThat(keycloakImport, is(not(nullValue())));
-    }
-
-    @Test
-    public void integrationTests() throws Exception {
-        shouldCreateRealmWithComponent();
-        shouldUpdateComponentsConfig();
-        shouldUpdateAddComponentsConfig();
-        shouldAddComponentForSameProviderType();
-        shouldAddComponentWithSubComponent();
-        shouldUpdateConfigOfSubComponent();
-    }
-
-    private void shouldCreateRealmWithComponent() throws Exception {
+    @Order(0)
+    void shouldCreateRealmWithComponent() throws Exception {
         doImport("0_create_realm_with_component.json");
 
         RealmRepresentation createdRealm = keycloakProvider.get().realm(REALM_NAME).toRepresentation();
@@ -105,7 +76,9 @@ public class ImportComponentsIT {
         assertThat(keySize.get(0), is("4096"));
     }
 
-    private void shouldUpdateComponentsConfig() throws Exception {
+    @Test
+    @Order(1)
+    void shouldUpdateComponentsConfig() throws Exception {
         doImport("1_update_realm__change_component_config.json");
 
         RealmRepresentation createdRealm = keycloakProvider.get().realm(REALM_NAME).toRepresentation();
@@ -127,7 +100,9 @@ public class ImportComponentsIT {
         assertThat(keySize.get(0), is("2048"));
     }
 
-    private void shouldUpdateAddComponentsConfig() throws Exception {
+    @Test
+    @Order(2)
+    void shouldUpdateAddComponentsConfig() throws Exception {
         doImport("2_update_realm__add_component_with_config.json");
 
         RealmRepresentation createdRealm = keycloakProvider.get().realm(REALM_NAME).toRepresentation();
@@ -160,7 +135,9 @@ public class ImportComponentsIT {
         ));
     }
 
-    private void shouldAddComponentForSameProviderType() throws Exception {
+    @Test
+    @Order(3)
+    void shouldAddComponentForSameProviderType() throws Exception {
         doImport("3_update_realm__add_component_for_same_providerType.json");
 
         RealmRepresentation createdRealm = keycloakProvider.get().realm(REALM_NAME).toRepresentation();
@@ -183,7 +160,9 @@ public class ImportComponentsIT {
         assertThat(secretSizeSize.get(0), is("32"));
     }
 
-    private void shouldAddComponentWithSubComponent() throws Exception {
+    @Test
+    @Order(4)
+    void shouldAddComponentWithSubComponent() throws Exception {
         doImport("4_update_realm__add_component_with_subcomponent.json");
 
         ComponentExportRepresentation createdComponent = exportComponent(
@@ -220,7 +199,9 @@ public class ImportComponentsIT {
         assertConfigHasValue(config, "role.object.classes", "group");
     }
 
-    private void shouldUpdateConfigOfSubComponent() throws Exception {
+    @Test
+    @Order(5)
+    void shouldUpdateConfigOfSubComponent() throws Exception {
         doImport("5_update_realm__update_config_in_subcomponent.json");
 
         ComponentExportRepresentation createdComponent = exportComponent(
@@ -344,18 +325,6 @@ public class ImportComponentsIT {
     }
 
     private void doImport(String realmImport) {
-        RealmImport foundImport = getImport(realmImport);
-        realmImportService.doImport(foundImport);
-    }
-
-    private RealmImport getImport(String importName) {
-        Map<String, RealmImport> realmImports = keycloakImport.getRealmImports();
-
-        return realmImports.entrySet()
-                .stream()
-                .filter(e -> e.getKey().equals(importName))
-                .map(Map.Entry::getValue)
-                .findFirst()
-                .get();
+        importUtil.doImport(realmImport);
     }
 }

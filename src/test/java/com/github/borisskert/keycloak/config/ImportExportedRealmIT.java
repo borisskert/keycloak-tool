@@ -1,11 +1,8 @@
 package com.github.borisskert.keycloak.config;
 
 import com.github.borisskert.keycloak.config.configuration.TestConfiguration;
-import com.github.borisskert.keycloak.config.model.KeycloakImport;
-import com.github.borisskert.keycloak.config.model.RealmImport;
-import com.github.borisskert.keycloak.config.service.KeycloakImportProvider;
 import com.github.borisskert.keycloak.config.service.KeycloakProvider;
-import com.github.borisskert.keycloak.config.service.RealmImportService;
+import com.github.borisskert.keycloak.config.util.KeycloakImportUtil;
 import com.github.borisskert.keycloak.config.util.ResourceLoader;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,7 +22,6 @@ import java.util.Properties;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.nullValue;
 
 @SpringBootTest
@@ -40,23 +36,17 @@ public class ImportExportedRealmIT {
     private static final String REALM_NAME = "master";
 
     @Autowired
-    RealmImportService realmImportService;
-
-    @Autowired
-    KeycloakImportProvider keycloakImportProvider;
-
-    @Autowired
     KeycloakProvider keycloakProvider;
 
-    KeycloakImport keycloakImport;
-
     String keycloakVersion;
+
+    @Autowired
+    KeycloakImportUtil importUtil;
 
     @BeforeEach
     public void setup() throws Exception {
         keycloakVersion = readKeycloakVersion();
-        File configsFolder = ResourceLoader.loadResource("import-files/exported-realm/" + keycloakVersion);
-        this.keycloakImport = keycloakImportProvider.readRealmImportsFromDirectory(configsFolder);
+        importUtil.workdir("import-files/exported-realm/" + keycloakVersion);
     }
 
     @AfterEach
@@ -65,16 +55,7 @@ public class ImportExportedRealmIT {
     }
 
     @Test
-    public void shouldReadImports() {
-        assertThat(keycloakImport, is(not(nullValue())));
-    }
-
-    @Test
-    public void integrationTests() throws Exception {
-        shouldImportExportedRealm();
-    }
-
-    private void shouldImportExportedRealm() throws Exception {
+    void shouldImportExportedRealm() throws Exception {
         doImport("master-realm.json");
 
         RealmRepresentation updatedRealm = keycloakProvider.get().realm(REALM_NAME).toRepresentation();
@@ -89,19 +70,7 @@ public class ImportExportedRealmIT {
     }
 
     private void doImport(String realmImport) {
-        RealmImport foundImport = getImport(realmImport);
-        realmImportService.doImport(foundImport);
-    }
-
-    private RealmImport getImport(String importName) {
-        Map<String, RealmImport> realmImports = keycloakImport.getRealmImports();
-
-        return realmImports.entrySet()
-                .stream()
-                .filter(e -> e.getKey().equals(importName))
-                .map(Map.Entry::getValue)
-                .findFirst()
-                .get();
+        importUtil.doImport(realmImport);
     }
 
     private String readKeycloakVersion() throws IOException {

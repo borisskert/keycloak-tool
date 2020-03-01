@@ -1,17 +1,11 @@
 package com.github.borisskert.keycloak.config;
 
 import com.github.borisskert.keycloak.config.configuration.TestConfiguration;
-import com.github.borisskert.keycloak.config.model.KeycloakImport;
-import com.github.borisskert.keycloak.config.model.RealmImport;
-import com.github.borisskert.keycloak.config.service.KeycloakImportProvider;
 import com.github.borisskert.keycloak.config.service.KeycloakProvider;
-import com.github.borisskert.keycloak.config.service.RealmImportService;
 import com.github.borisskert.keycloak.config.util.KeycloakAuthentication;
+import com.github.borisskert.keycloak.config.util.KeycloakImportUtil;
 import com.github.borisskert.keycloak.config.util.KeycloakRepository;
-import com.github.borisskert.keycloak.config.util.ResourceLoader;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.keycloak.representations.idm.RealmRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,9 +14,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
-
-import java.io.File;
-import java.util.Map;
 
 import static com.googlecode.catchexception.CatchException.catchException;
 import static com.googlecode.catchexception.CatchException.caughtException;
@@ -41,14 +32,9 @@ import static org.hamcrest.core.IsNull.nullValue;
 )
 @ActiveProfiles("IT")
 @DirtiesContext
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ImportUsersIT {
     private static final String REALM_NAME = "realmWithUsers";
-
-    @Autowired
-    RealmImportService realmImportService;
-
-    @Autowired
-    KeycloakImportProvider keycloakImportProvider;
 
     @Autowired
     KeycloakProvider keycloakProvider;
@@ -59,32 +45,22 @@ public class ImportUsersIT {
     @Autowired
     KeycloakAuthentication keycloakAuthentication;
 
-    KeycloakImport keycloakImport;
+    @Autowired
+    KeycloakImportUtil importUtil;
 
     @BeforeEach
     public void setup() throws Exception {
-        File configsFolder = ResourceLoader.loadResource("import-files/users");
-        this.keycloakImport = keycloakImportProvider.readRealmImportsFromDirectory(configsFolder);
+        importUtil.workdir("import-files/users");
     }
 
     @AfterEach
-    public void cleanup() throws Exception {
+    void cleanup() throws Exception {
         keycloakProvider.close();
     }
 
     @Test
-    public void shouldReadImports() {
-        assertThat(keycloakImport, is(not(nullValue())));
-    }
-
-    @Test
-    public void integrationTests() throws Exception {
-        shouldCreateRealmWithUser();
-        shouldUpdateRealmWithAddingClientUser();
-        shouldUpdateRealmWithChangedClientUserPassword();
-    }
-
-    private void shouldCreateRealmWithUser() throws Exception {
+    @Order(0)
+    void shouldCreateRealmWithUser() throws Exception {
         doImport("0_create_realm_with_user.json");
 
         RealmRepresentation createdRealm = keycloakProvider.get().realm(REALM_NAME).toRepresentation();
@@ -101,7 +77,10 @@ public class ImportUsersIT {
         assertThat(createdUser.getLastName(), is("My lastname"));
     }
 
-    private void shouldUpdateRealmWithAddingClientUser() throws Exception {
+
+    @Test
+    @Order(1)
+    void shouldUpdateRealmWithAddingClientUser() throws Exception {
         doImport("1_update_realm_add_clientuser.json");
 
         RealmRepresentation createdRealm = keycloakProvider.get().realm(REALM_NAME).toRepresentation();
@@ -133,7 +112,9 @@ public class ImportUsersIT {
         assertThat(token.getTokenType(), is("bearer"));
     }
 
-    private void shouldUpdateRealmWithChangedClientUserPassword() throws Exception {
+    @Test
+    @Order(2)
+    void shouldUpdateRealmWithChangedClientUserPassword() throws Exception {
         doImport("2_update_realm_change_clientusers_password.json");
 
         RealmRepresentation createdRealm = keycloakProvider.get().realm(REALM_NAME).toRepresentation();
@@ -181,18 +162,6 @@ public class ImportUsersIT {
     }
 
     private void doImport(String realmImport) {
-        RealmImport foundImport = getImport(realmImport);
-        realmImportService.doImport(foundImport);
-    }
-
-    private RealmImport getImport(String importName) {
-        Map<String, RealmImport> realmImports = keycloakImport.getRealmImports();
-
-        return realmImports.entrySet()
-                .stream()
-                .filter(e -> e.getKey().equals(importName))
-                .map(Map.Entry::getValue)
-                .findFirst()
-                .get();
+        importUtil.doImport(realmImport);
     }
 }

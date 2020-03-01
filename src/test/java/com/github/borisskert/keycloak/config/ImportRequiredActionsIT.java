@@ -2,16 +2,12 @@ package com.github.borisskert.keycloak.config;
 
 import com.github.borisskert.keycloak.config.configuration.TestConfiguration;
 import com.github.borisskert.keycloak.config.exception.InvalidImportException;
-import com.github.borisskert.keycloak.config.model.KeycloakImport;
 import com.github.borisskert.keycloak.config.model.RealmImport;
-import com.github.borisskert.keycloak.config.service.KeycloakImportProvider;
 import com.github.borisskert.keycloak.config.service.KeycloakProvider;
 import com.github.borisskert.keycloak.config.service.RealmImportService;
-import com.github.borisskert.keycloak.config.util.ResourceLoader;
+import com.github.borisskert.keycloak.config.util.KeycloakImportUtil;
 import com.googlecode.catchexception.apis.CatchExceptionHamcrestMatchers;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.keycloak.representations.idm.RealmRepresentation;
 import org.keycloak.representations.idm.RequiredActionProviderRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,8 +17,6 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 
-import java.io.File;
-import java.util.Map;
 import java.util.Optional;
 
 import static com.googlecode.catchexception.CatchException.catchException;
@@ -31,8 +25,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.AllOf.allOf;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
-import static org.hamcrest.core.IsNot.not;
-import static org.hamcrest.core.IsNull.nullValue;
 
 @SpringBootTest
 @ContextConfiguration(
@@ -41,6 +33,7 @@ import static org.hamcrest.core.IsNull.nullValue;
 )
 @ActiveProfiles("IT")
 @DirtiesContext
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ImportRequiredActionsIT {
     private static final String REALM_NAME = "realmWithRequiredActions";
 
@@ -48,40 +41,24 @@ public class ImportRequiredActionsIT {
     RealmImportService realmImportService;
 
     @Autowired
-    KeycloakImportProvider keycloakImportProvider;
-
-    @Autowired
     KeycloakProvider keycloakProvider;
 
-    KeycloakImport keycloakImport;
+    @Autowired
+    KeycloakImportUtil importUtil;
 
     @BeforeEach
-    public void setup() throws Exception {
-        File configsFolder = ResourceLoader.loadResource("import-files/required-actions");
-        this.keycloakImport = keycloakImportProvider.readRealmImportsFromDirectory(configsFolder);
+    void setup() throws Exception {
+        importUtil.workdir("import-files/required-actions");
     }
 
     @AfterEach
-    public void cleanup() throws Exception {
+    void cleanup() throws Exception {
         keycloakProvider.close();
     }
 
     @Test
-    public void shouldReadImports() {
-        assertThat(keycloakImport, is(not(nullValue())));
-    }
-
-    @Test
-    public void integrationTests() throws Exception {
-        shouldCreateRealmWithRequiredActions();
-        shouldFailIfAddingInvalidRequiredActionName();
-        shouldAddRequiredAction();
-        shouldChangeRequiredActionName();
-        shouldEnableRequiredAction();
-        shouldChangePriorities();
-    }
-
-    private void shouldCreateRealmWithRequiredActions() throws Exception {
+    @Order(0)
+    void shouldCreateRealmWithRequiredActions() throws Exception {
         doImport("0_create_realm_with_required-action.json");
 
         RealmRepresentation createdRealm = keycloakProvider.get().realm(REALM_NAME).partialExport(true, true);
@@ -98,7 +75,9 @@ public class ImportRequiredActionsIT {
         assertThat(createdRequiredAction.getPriority(), is(0));
     }
 
-    private void shouldFailIfAddingInvalidRequiredActionName() {
+    @Test
+    @Order(1)
+    void shouldFailIfAddingInvalidRequiredActionName() {
         RealmImport foundImport = getImport("1_update_realm__try_adding_invalid_required-action.json");
 
         catchException(realmImportService).doImport(foundImport);
@@ -111,7 +90,9 @@ public class ImportRequiredActionsIT {
         );
     }
 
-    private void shouldAddRequiredAction() {
+    @Test
+    @Order(2)
+    void shouldAddRequiredAction() {
         doImport("2_update_realm__add_required-action.json");
 
         RealmRepresentation updatedRealm = keycloakProvider.get().realm(REALM_NAME).partialExport(true, true);
@@ -136,7 +117,9 @@ public class ImportRequiredActionsIT {
         assertThat(addedRequiredAction.getPriority(), is(1));
     }
 
-    private void shouldChangeRequiredActionName() {
+    @Test
+    @Order(3)
+    void shouldChangeRequiredActionName() {
         doImport("3_update_realm__change_name_of_required-action.json");
 
         RealmRepresentation updatedRealm = keycloakProvider.get().realm(REALM_NAME).partialExport(true, true);
@@ -161,7 +144,9 @@ public class ImportRequiredActionsIT {
         assertThat(changedRequiredAction.getPriority(), is(1));
     }
 
-    private void shouldEnableRequiredAction() {
+    @Test
+    @Order(4)
+    void shouldEnableRequiredAction() {
         doImport("4_update_realm__enable_required-action.json");
 
         RealmRepresentation updatedRealm = keycloakProvider.get().realm(REALM_NAME).partialExport(true, true);
@@ -186,7 +171,9 @@ public class ImportRequiredActionsIT {
         assertThat(changedRequiredAction.getPriority(), is(1));
     }
 
-    private void shouldChangePriorities() {
+    @Test
+    @Order(5)
+    void shouldChangePriorities() {
         doImport("5_update_realm__change_priorities_required-action.json");
 
         RealmRepresentation updatedRealm = keycloakProvider.get().realm(REALM_NAME).partialExport(true, true);
@@ -223,18 +210,10 @@ public class ImportRequiredActionsIT {
     }
 
     private void doImport(String realmImport) {
-        RealmImport foundImport = getImport(realmImport);
-        realmImportService.doImport(foundImport);
+        importUtil.doImport(realmImport);
     }
 
     private RealmImport getImport(String importName) {
-        Map<String, RealmImport> realmImports = keycloakImport.getRealmImports();
-
-        return realmImports.entrySet()
-                .stream()
-                .filter(e -> e.getKey().equals(importName))
-                .map(Map.Entry::getValue)
-                .findFirst()
-                .get();
+        return importUtil.getImport(importName);
     }
 }
