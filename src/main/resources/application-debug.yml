@@ -11,3 +11,5 @@ logging:
     com.github.borisskert.keycloak.config.service.ClientImportService: debug
     com.github.borisskert.keycloak.config.service.ScopeMappingImportService: debug
     com.github.borisskert.keycloak.config.service.GroupImportService: debug
+    com.github.borisskert.keycloak.config.service.RoleCompositeImportService: debug
+    com.github.borisskert.keycloak.config.service.ClientRoleCompositeImportService: debug
