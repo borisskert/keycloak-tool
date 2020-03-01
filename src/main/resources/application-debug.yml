@@ -11,5 +11,7 @@ logging:
     com.github.borisskert.keycloak.config.service.ClientImportService: debug
     com.github.borisskert.keycloak.config.service.ScopeMappingImportService: debug
     com.github.borisskert.keycloak.config.service.GroupImportService: debug
-    com.github.borisskert.keycloak.config.service.RoleCompositeImportService: debug
-    com.github.borisskert.keycloak.config.service.ClientRoleCompositeImportService: debug
+    com.github.borisskert.keycloak.config.service.rolecomposites.realm.RealmCompositeImport: debug
+    com.github.borisskert.keycloak.config.service.rolecomposites.realm.ClientCompositeImport: debug
+    com.github.borisskert.keycloak.config.service.rolecomposites.client.RealmCompositeImport: debug
+    com.github.borisskert.keycloak.config.service.rolecomposites.client.ClientCompositeImport: debug
