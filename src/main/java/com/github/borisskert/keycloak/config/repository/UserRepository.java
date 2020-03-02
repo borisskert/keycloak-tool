@@ -27,7 +27,7 @@ public class UserRepository {
         Optional<UserRepresentation> maybeUser;
         List<UserRepresentation> foundUsers = realmRepository.loadRealm(realm).users().search(username);
 
-        if(foundUsers.isEmpty()) {
+        if (foundUsers.isEmpty()) {
             maybeUser = Optional.empty();
         } else {
             maybeUser = Optional.of(foundUsers.get(0));
@@ -36,7 +36,7 @@ public class UserRepository {
         return maybeUser;
     }
 
-    public UserResource getUserResource(String realm, String username) {
+    final UserResource getUserResource(String realm, String username) {
         UserRepresentation foundUser = findUser(realm, username);
         return realmRepository.loadRealm(realm).users().get(foundUser.getId());
     }
@@ -44,7 +44,7 @@ public class UserRepository {
     public UserRepresentation findUser(String realm, String username) throws KeycloakRepositoryException {
         List<UserRepresentation> foundUsers = realmRepository.loadRealm(realm).users().search(username);
 
-        if(foundUsers.isEmpty()) {
+        if (foundUsers.isEmpty()) {
             throw new KeycloakRepositoryException("Cannot find user '" + username + "' in realm '" + realm + "'");
         }
 

@@ -1,7 +1,6 @@
 package com.github.borisskert.keycloak.config.repository;
 
 import com.github.borisskert.keycloak.config.exception.KeycloakRepositoryException;
-import com.github.borisskert.keycloak.config.util.MultiValueMap;
 import org.keycloak.admin.client.resource.*;
 import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
@@ -10,7 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.ws.rs.NotFoundException;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -51,165 +52,6 @@ public class RoleRepository {
         rolesResource.create(role);
     }
 
-    public void addRealmRoleRealmComposites(String realm, String roleName, Set<String> realmComposites) {
-        RoleResource roleResource = realmRepository.loadRealm(realm)
-                .roles()
-                .get(roleName);
-
-        List<RoleRepresentation> realmRoles = realmComposites.stream()
-                .map(realmRoleName -> findRealmRole(realm, realmRoleName))
-                .collect(Collectors.toList());
-
-        roleResource.addComposites(realmRoles);
-    }
-
-    public void removeRealmRoleRealmComposites(String realm, String roleName, Set<String> realmComposites) {
-        RoleResource roleResource = realmRepository.loadRealm(realm)
-                .roles()
-                .get(roleName);
-
-        List<RoleRepresentation> realmRoles = realmComposites.stream()
-                .map(realmRoleName -> findRealmRole(realm, realmRoleName))
-                .collect(Collectors.toList());
-
-        roleResource.deleteComposites(realmRoles);
-    }
-
-    public void removeClientRoleRealmComposites(String realm, String roleClientId, String roleName, Set<String> realmComposites) {
-        RoleResource roleResource = loadClientRole(realm, roleClientId, roleName);
-
-        List<RoleRepresentation> realmRoles = realmComposites.stream()
-                .map(realmRoleName -> findRealmRole(realm, realmRoleName))
-                .collect(Collectors.toList());
-
-        roleResource.deleteComposites(realmRoles);
-    }
-
-    public Set<RoleRepresentation> findRealmRoleRealmComposites(String realm, String roleName) {
-        RoleResource roleResource = realmRepository.loadRealm(realm)
-                .roles()
-                .get(roleName);
-
-        return roleResource.getRealmRoleComposites();
-    }
-
-    public void addClientRoleRealmComposites(
-            String realm,
-            String roleClientId,
-            String roleName,
-            Set<String> realmComposites
-    ) {
-        RoleResource roleResource = loadClientRole(realm, roleClientId, roleName);
-
-        List<RoleRepresentation> realmRoles = realmComposites.stream()
-                .map(realmRoleName -> findRealmRole(realm, realmRoleName))
-                .collect(Collectors.toList());
-
-        roleResource.addComposites(realmRoles);
-    }
-
-    public Set<RoleRepresentation> findClientRoleRealmComposites(
-            String realm,
-            String roleClientId,
-            String roleName
-    ) {
-        RoleResource roleResource = loadClientRole(realm, roleClientId, roleName);
-
-        return roleResource.getRealmRoleComposites();
-    }
-
-    public void addRealmRoleClientComposites(String realm, String roleName, String compositeClientId, Collection<String> clientRoles) {
-        RoleResource roleResource = realmRepository.loadRealm(realm)
-                .roles()
-                .get(roleName);
-
-        List<RoleRepresentation> realmRoles = clientRoles.stream()
-                .map(clientRoleName -> findClientRole(realm, compositeClientId, clientRoleName))
-                .collect(Collectors.toList());
-
-        roleResource.addComposites(realmRoles);
-    }
-
-    public void removeRealmRoleClientComposites(String realm, String roleName, String compositeClientId, Collection<String> clientRoleNames) {
-        RoleResource roleResource = loadRealmRole(realm, roleName);
-
-        List<RoleRepresentation> clientRoles = clientRoleNames.stream()
-                .map(clientRoleName -> findClientRole(realm, compositeClientId, clientRoleName))
-                .collect(Collectors.toList());
-
-        roleResource.deleteComposites(clientRoles);
-    }
-
-    public void removeRealmRoleClientComposites(String realm, String roleName, Map<String, List<String>> clientCompositesToRemove) {
-        RoleResource roleResource = realmRepository.loadRealm(realm)
-                .roles()
-                .get(roleName);
-
-        List<RoleRepresentation> clientRolesToRemove = mapToClientRoles(realm, clientCompositesToRemove);
-
-        roleResource.deleteComposites(clientRolesToRemove);
-    }
-
-    public Set<RoleRepresentation> findRealmRoleClientComposites(String realm, String roleName, String compositeClientId) {
-        RoleResource roleResource = loadRealmRole(realm, roleName);
-
-        ClientRepresentation client = clientRepository.getClient(realm, compositeClientId);
-
-        return roleResource.getClientRoleComposites(client.getId());
-    }
-
-    public Map<String, List<String>> findRealmRoleClientComposites(String realm, String roleName) {
-        RoleResource roleResource = loadRealmRole(realm, roleName);
-
-        List<ClientRepresentation> clients = clientRepository.getClients(realm);
-        MultiValueMap<String, String> clientComposites = new MultiValueMap<>();
-
-        for (ClientRepresentation client : clients) {
-            Set<String> clientRoleComposites = roleResource.getClientRoleComposites(client.getId())
-                    .stream().map(RoleRepresentation::getName)
-                    .collect(Collectors.toSet());
-
-            clientComposites.putAll(client.getClientId(), clientRoleComposites);
-        }
-
-        return clientComposites.toMap();
-    }
-
-    private RoleResource loadRealmRole(String realm, String roleName) {
-        RealmResource realmResource = realmRepository.loadRealm(realm);
-        return realmResource
-                .roles()
-                .get(roleName);
-    }
-
-    public void addClientRoleClientComposites(
-            String realm,
-            String roleClientId,
-            String roleName,
-            String compositeClientId,
-            Collection<String> clientComposites
-    ) {
-        RoleResource roleResource = loadClientRole(realm, roleClientId, roleName);
-
-        List<RoleRepresentation> clientRoles = clientComposites.stream()
-                .map(clientRoleName -> findClientRole(realm, compositeClientId, clientRoleName))
-                .collect(Collectors.toList());
-
-        roleResource.addComposites(clientRoles);
-    }
-
-    public Set<RoleRepresentation> findClientRoleClientComposites(
-            String realm,
-            String roleClientId,
-            String roleName,
-            String compositeClientId
-    ) {
-        RoleResource roleResource = loadClientRole(realm, roleClientId, roleName);
-        ClientRepresentation client = clientRepository.getClient(realm, compositeClientId);
-
-        return roleResource.getClientRoleComposites(client.getId());
-    }
-
     public void updateRealmRole(String realm, RoleRepresentation roleToUpdate) {
         RoleResource roleResource = realmRepository.loadRealm(realm)
                 .roles()
@@ -233,7 +75,7 @@ public class RoleRepository {
                 .collect(Collectors.toList());
     }
 
-    public Optional<RoleRepresentation> tryToFindClientRole(String realm, String clientId, String roleName) {
+    public final Optional<RoleRepresentation> tryToFindClientRole(String realm, String clientId, String roleName) {
         ClientRepresentation client = clientRepository.getClient(realm, clientId);
         RealmResource realmResource = realmRepository.loadRealm(realm);
 
@@ -248,17 +90,7 @@ public class RoleRepository {
     }
 
     public RoleRepresentation findClientRole(String realm, String clientId, String roleName) {
-        ClientRepresentation client = clientRepository.getClient(realm, clientId);
-        RealmResource realmResource = realmRepository.loadRealm(realm);
-
-        List<RoleRepresentation> clientRoles = realmResource.clients()
-                .get(client.getId())
-                .roles()
-                .list();
-
-        return clientRoles.stream()
-                .filter(r -> r.getName().equals(roleName))
-                .findFirst()
+        return tryToFindClientRole(realm, clientId, roleName)
                 .get();
     }
 
@@ -357,7 +189,14 @@ public class RoleRepository {
         return roles.stream().map(RoleRepresentation::getName).collect(Collectors.toList());
     }
 
-    private RoleResource loadClientRole(String realm, String roleClientId, String roleName) {
+    final RoleResource loadRealmRole(String realm, String roleName) {
+        RealmResource realmResource = realmRepository.loadRealm(realm);
+        return realmResource
+                .roles()
+                .get(roleName);
+    }
+
+    final RoleResource loadClientRole(String realm, String roleClientId, String roleName) {
         ClientRepresentation client = clientRepository.getClient(realm, roleClientId);
 
         return realmRepository.loadRealm(realm)
@@ -365,69 +204,5 @@ public class RoleRepository {
                 .get(client.getId())
                 .roles()
                 .get(roleName);
-    }
-
-    public void removeClientRoleClientComposites(String realm, String roleClientId, String roleName, String compositeClientId, Collection<String> clientRoleNames) {
-        RoleResource roleResource = loadClientRole(realm, roleClientId, roleName);
-
-        List<RoleRepresentation> clientRoles = clientRoleNames.stream()
-                .map(clientRoleName -> findClientRole(realm, compositeClientId, clientRoleName))
-                .collect(Collectors.toList());
-
-        roleResource.deleteComposites(clientRoles);
-    }
-
-    public void removeClientRoleClientComposites(String realm, String roleClientId, String roleName, Map<String, List<String>> clientCompositesToRemove) {
-        RoleResource roleResource = loadClientRole(realm, roleClientId, roleName);
-        List<RoleRepresentation> clientRolesToRemove = findAllClientRoles(realm, clientCompositesToRemove);
-
-        roleResource.deleteComposites(clientRolesToRemove);
-    }
-
-    private List<RoleRepresentation> findAllClientRoles(String realm, Map<String, List<String>> clientCompositesToRemove) {
-        List<RoleRepresentation> clientRolesToRemove = new ArrayList<>();
-        for (Map.Entry<String, List<String>> entry : clientCompositesToRemove.entrySet()) {
-            String clientId = entry.getKey();
-            for (String role : entry.getValue()) {
-                RoleRepresentation clientRole = findClientRole(realm, clientId, role);
-                clientRolesToRemove.add(clientRole);
-            }
-        }
-        return clientRolesToRemove;
-    }
-
-    public Map<String, List<String>> findClientRoleClientComposites(String realm, String roleClientId, String roleName) {
-        RoleResource roleResource = loadClientRole(realm, roleClientId, roleName);
-
-        List<ClientRepresentation> clients = clientRepository.getClients(realm);
-        MultiValueMap<String, String> clientComposites = new MultiValueMap<>();
-
-        for (ClientRepresentation client : clients) {
-            Set<String> clientRoleComposites = roleResource.getClientRoleComposites(client.getId())
-                    .stream()
-                    .map(RoleRepresentation::getName)
-                    .collect(Collectors.toSet());
-
-            clientComposites.putAll(client.getClientId(), clientRoleComposites);
-        }
-
-        return clientComposites.toMap();
-    }
-
-    private List<RoleRepresentation> mapToClientRoles(String realm, Map<String, List<String>> clientCompositesToRemove) {
-        List<RoleRepresentation> clientRolesToRemove = new ArrayList<>();
-
-        for (Map.Entry<String, List<String>> compositesByClients : clientCompositesToRemove.entrySet()) {
-            String clientId = compositesByClients.getKey();
-            List<String> compositesByClient = compositesByClients.getValue();
-
-            List<RoleRepresentation> clientRoles = compositesByClient.stream()
-                    .map(composite -> findClientRole(realm, clientId, composite))
-                    .collect(Collectors.toList());
-
-            clientRolesToRemove.addAll(clientRoles);
-        }
-
-        return clientRolesToRemove;
     }
 }
