@@ -1,5 +1,6 @@
 package com.github.borisskert.keycloak.config.service;
 
+import com.github.borisskert.keycloak.config.model.RealmImport;
 import com.github.borisskert.keycloak.config.repository.RoleRepository;
 import com.github.borisskert.keycloak.config.repository.UserRepository;
 import com.github.borisskert.keycloak.config.util.CloneUtils;
@@ -34,7 +35,17 @@ public class UserImportService {
         this.roleRepository = roleRepository;
     }
 
-    public void importUser(String realm, UserRepresentation user) {
+    public void doImport(RealmImport realmImport) {
+        List<UserRepresentation> users = realmImport.getUsers();
+
+        if (users != null) {
+            for (UserRepresentation user : users) {
+                importUser(realmImport.getRealm(), user);
+            }
+        }
+    }
+
+    private void importUser(String realm, UserRepresentation user) {
         UserImport userImport = new UserImport(realm, user);
         userImport.importUser();
     }

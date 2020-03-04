@@ -42,7 +42,7 @@ public class RealmImport extends RealmRepresentation {
     @Override
     public MultivaluedHashMap<String, ComponentExportRepresentation> getComponents() {
         MultivaluedHashMap<String, ComponentExportRepresentation> components = super.getComponents();
-        if(components == null) {
+        if (components == null) {
             return new MultivaluedHashMap<>();
         }
 
@@ -51,11 +51,11 @@ public class RealmImport extends RealmRepresentation {
 
     @Override
     public List<AuthenticationFlowRepresentation> getAuthenticationFlows() {
-        if(authenticationFlowImports == null) {
+        if (authenticationFlowImports == null) {
             return Collections.emptyList();
         }
 
-        return (List)authenticationFlowImports;
+        return (List) authenticationFlowImports;
     }
 
     @Override
@@ -77,7 +77,7 @@ public class RealmImport extends RealmRepresentation {
     public List<AuthenticatorConfigRepresentation> getAuthenticatorConfig() {
         List<AuthenticatorConfigRepresentation> authenticatorConfig = super.getAuthenticatorConfig();
 
-        if(authenticatorConfig == null) {
+        if (authenticatorConfig == null) {
             authenticatorConfig = Collections.emptyList();
         }
 
@@ -86,7 +86,7 @@ public class RealmImport extends RealmRepresentation {
 
     @Override
     public List<RequiredActionProviderRepresentation> getRequiredActions() {
-        if(requiredActions == null) {
+        if (requiredActions == null) {
             return Collections.emptyList();
         }
 
@@ -115,7 +115,7 @@ public class RealmImport extends RealmRepresentation {
     public AuthenticationFlowRepresentation getNonTopLevelFlow(String alias) {
         Optional<AuthenticationFlowRepresentation> maybeNonTopLevelFlow = tryToGetNonTopLevelFlow(alias);
 
-        if(!maybeNonTopLevelFlow.isPresent()) {
+        if (!maybeNonTopLevelFlow.isPresent()) {
             throw new RuntimeException("Non-toplevel flow not found: " + alias);
         }
 
@@ -136,7 +136,7 @@ public class RealmImport extends RealmRepresentation {
     public List<ClientRepresentation> getClients() {
         List<ClientRepresentation> clients = super.getClients();
 
-        if(clients == null) {
+        if (clients == null) {
             return Collections.emptyList();
         }
 

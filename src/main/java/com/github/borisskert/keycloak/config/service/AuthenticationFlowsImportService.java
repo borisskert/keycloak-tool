@@ -1,9 +1,9 @@
 package com.github.borisskert.keycloak.config.service;
 
 import com.github.borisskert.keycloak.config.exception.InvalidImportException;
+import com.github.borisskert.keycloak.config.model.RealmImport;
 import com.github.borisskert.keycloak.config.repository.AuthenticationFlowRepository;
 import com.github.borisskert.keycloak.config.repository.ExecutionFlowRepository;
-import com.github.borisskert.keycloak.config.model.RealmImport;
 import com.github.borisskert.keycloak.config.util.CloneUtils;
 import org.keycloak.representations.idm.AuthenticationExecutionInfoRepresentation;
 import org.keycloak.representations.idm.AuthenticationFlowRepresentation;
@@ -169,7 +169,7 @@ public class AuthenticationFlowsImportService {
     ) {
         AuthenticationFlowRepresentation patchedAuthenticationFlow = CloneUtils.deepPatch(existingAuthenticationFlow, topLevelFlowToImport, "id");
 
-        if(patchedAuthenticationFlow.isBuiltIn() || existingAuthenticationFlow.isBuiltIn()) {
+        if (patchedAuthenticationFlow.isBuiltIn() || existingAuthenticationFlow.isBuiltIn()) {
             throw new InvalidImportException("Unable to recreate flow '" + patchedAuthenticationFlow.getAlias() + "' in realm '" + realm.getRealm() + "': Deletion or creation of built-in flows is not possible");
         }
 

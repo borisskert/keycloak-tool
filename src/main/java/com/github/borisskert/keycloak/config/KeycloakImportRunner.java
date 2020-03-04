@@ -31,7 +31,7 @@ public class KeycloakImportRunner implements CommandLineRunner {
 
         Map<String, RealmImport> realmImports = keycloakImport.getRealmImports();
 
-        for(Map.Entry<String, RealmImport> realmImport : realmImports.entrySet()) {
+        for (Map.Entry<String, RealmImport> realmImport : realmImports.entrySet()) {
             realmImportService.doImport(realmImport.getValue());
         }
     }
