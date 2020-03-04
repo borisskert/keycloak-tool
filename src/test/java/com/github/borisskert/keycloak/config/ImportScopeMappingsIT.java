@@ -31,7 +31,6 @@ import static org.hamcrest.core.IsNull.nullValue;
         initializers = {ConfigFileApplicationContextInitializer.class}
 )
 @ActiveProfiles("IT")
-@DirtiesContext
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ImportScopeMappingsIT {
     private static final String REALM_NAME = "realmWithScopeMappings";

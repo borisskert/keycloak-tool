@@ -31,7 +31,6 @@ import static org.hamcrest.core.Is.is;
         initializers = {ConfigFileApplicationContextInitializer.class}
 )
 @ActiveProfiles("IT")
-@DirtiesContext
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ImportComponentsIT {
     private static final String REALM_NAME = "realmWithComponents";

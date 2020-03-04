@@ -30,7 +30,6 @@ import static org.hamcrest.core.IsNull.nullValue;
         initializers = {ConfigFileApplicationContextInitializer.class}
 )
 @ActiveProfiles("IT")
-@DirtiesContext
 public class ImportExportedRealmIT {
     private static final Map<String, String> EXPECTED_CHECKSUMS = new HashMap<>();
     private static final String REALM_NAME = "master";

@@ -36,7 +36,6 @@ import static org.hamcrest.core.IsInstanceOf.instanceOf;
         initializers = {ConfigFileApplicationContextInitializer.class}
 )
 @ActiveProfiles("IT")
-@DirtiesContext
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ImportAuthenticationFlowsIT {
     private static final String REALM_NAME = "realmWithFlow";
