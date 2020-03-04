@@ -19,7 +19,7 @@ script:
 
 before_deploy:
   - mkdir -p ./releases
-  - cp -a config-cli/target/config-cli.jar "releases/config-cli-${KEYCLOAK_VERSION}.jar"
+  - cp -a target/keycloak-tool.jar "releases/keycloak-tool-${KEYCLOAK_VERSION}.jar"
 
 deploy:
   - skip_cleanup: true
@@ -34,7 +34,7 @@ deploy:
     provider: releases
     api_key:
       secure: FIuwkoSRs6i1yEoCoiRpMcY+IGhpL5VH8w5Dj9s/apSLSyIFqTH3MKBMHY8PLIfEBtBQelTmEzdEcccoKqpX2dm0ctisF0ozJLkSLeXUgRojMEW9YbRk5xtJ5BJzSuB7+XGP6uEqQk/n/R9w3oO3cIiyX9jks4dLYY6IjXD8ivNJbk7C6u0c1Hp44rRqf/yT4HxRgxv2pvatwY2nv82s3O+uE6FXddIZ0cPJm4kt7tIUT0ER6UdHzNKVvVHLKncwgsOEBk3sWyU1N9xXbCTAdy3T/ay3in7tQ4R4sWQAnx54dGU2c+uHmxVmbuGS398PFBCVveOWtNpEOWxdt/fPVqpliDwD/EbHRNbs1C/V/0tGxrGUb3flSSMa5hUhgJlaxA+jC1M3gRmVH56kcSzhV5zuuyzM3Wn+uqF3ZL/8+D0KKj/EDLt/UQwQ1/Lh5re+Fwetc8xxfQiraz2X+FbZUN94veARGu572ZhIgx7yKBxF/APf60yn2edlbeuv3NU6KL5+NUxFTCmjrWO9otx3kA7YH/5+TMUaKolk5l92kUUKGrZDp8q0XOMgFDrE6z1i+t+GcXfC3iCPoB1SSVxTVOgJ6dZXwPwYLfUzPQbMRMMWUv7tGnjNM1B4eqzJc53All/o58EYypTiwjuUL4nDj7Cl6/AlDzJdOaysm5guyyA=
-    file: releases/config-cli-${KEYCLOAK_VERSION}.jar
+    file: releases/keycloak-tool-${KEYCLOAK_VERSION}.jar
     on:
       tags: true
       # matches: vX.Y.Z, vX.Y.Z-A, vX.Y.Z-A-B.C.D, vX.Y.Z-A-B.C.D-E

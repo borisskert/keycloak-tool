@@ -8,12 +8,13 @@ services:
     volumes:
       - ./tmp:/tmp
     ports:
-    - "8080:8080"
-    - "8787:8787"
+      - "8080:8080"
+      - "8787:8787"
     command:
-    - "-b"
-    - "0.0.0.0"
-    - "--debug"
-    - "-Dkeycloak.migration.action=export"
-    - "-Dkeycloak.migration.provider=dir"
-    - "-Dkeycloak.migration.dir=/tmp"
+      - "-b"
+      - "0.0.0.0"
+      - "--debug *:8787"
+      - "-Dkeycloak.migration.action=export"
+      - "-Dkeycloak.migration.provider=dir"
+      - "-Dkeycloak.migration.dir=/tmp"
+      - "-Dkeycloak.migration.usersExportStrategy=REALM_FILE"

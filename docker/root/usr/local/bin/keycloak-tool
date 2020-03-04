@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+set -e
+
+if [ -z ${KEYCLOAK_URL} ]
+	then
+		echo "Missing KEYCLOAK_URL environment variable"
+		exit 1
+fi
+
+if [ -z ${KEYCLOAK_ADMIN} ]
+	then
+		echo "Missing KEYCLOAK_ADMIN environment variable"
+		exit 1
+fi
+
+if [ -z ${KEYCLOAK_ADMIN_PASSWORD} ]
+	then
+		echo "Missing KEYCLOAK_ADMIN_PASSWORD environment variable"
+		exit 1
+fi
+
+
+echo 'wait until keycloak is available'
+wtfc -T ${WAIT_TIME_IN_SECONDS:-120} -S 0 -I 2 curl -f ${KEYCLOAK_URL}
+
+
+$JAVA_HOME/bin/java $JAVA_OPTS -jar ./keycloak-tool.jar \
+  --keycloak.url=${KEYCLOAK_URL}/auth \
+  --keycloak.user=${KEYCLOAK_ADMIN} \
+  --keycloak.password=${KEYCLOAK_ADMIN_PASSWORD} \
+  --import.path=/tmp/keycloak-tool/configs

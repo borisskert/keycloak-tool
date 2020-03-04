@@ -1,229 +1,316 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>2.2.5.RELEASE</version>
+		<relativePath/>
+	</parent>
 
 	<groupId>com.github.borisskert</groupId>
 	<artifactId>keycloak-tool</artifactId>
-	<packaging>pom</packaging>
 	<version>0.12.0-SNAPSHOT</version>
 
-	<modules>
-		<module>config-cli</module>
-	</modules>
-
-	<properties>
-		<maven.compiler.source>1.8</maven.compiler.source>
-		<maven.compiler.target>1.8</maven.compiler.target>
-		<maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<spring-boot.version>2.1.7.RELEASE</spring-boot.version>
-		<keycloak.version>9.0.0</keycloak.version>
-		<slf4j.version>1.7.28</slf4j.version>
-		<jboss.resteasy.version>3.0.14.Final</jboss.resteasy.version>
-		<jacoco.reportPath>${project.basedir}/../target/jacoco.exec</jacoco.reportPath>
-	</properties>
-
-	<name>keycloak-tools</name>
-	<url>https://github.com/borisskert/keycloak-tool</url>
+	<name>keycloak-tool</name>
 	<description>keycloak-tool (formerly keycloak-config-cli)</description>
 
-	<licenses>
-		<license>
-			<name>The Apache License, Version 2.0</name>
-			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-		</license>
-	</licenses>
+	<properties>
+		<java.version>11</java.version>
+		<maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<keycloak.version>9.0.0</keycloak.version>
+	</properties>
 
-	<developers>
-		<developer>
-			<name>Boris Skert</name>
-			<email>boris.skert@gmail.com</email>
-		</developer>
-	</developers>
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter</artifactId>
+		</dependency>
 
-	<scm>
-		<connection>scm:git:https://github.com/borisskert/keycloak-tool.git</connection>
-		<developerConnection>scm:git:git@github.com:borisskert/keycloak-tool.git</developerConnection>
-		<url>git@github.com:borisskert/keycloak-tool.git</url>
-		<tag>HEAD</tag>
-	</scm>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation</artifactId>
+		</dependency>
 
-	<dependencyManagement>
-		<dependencies>
-			<!--https://docs.spring.io/spring-boot/docs/current/reference/html/using-boot-build-systems.html#using-boot-maven-without-a-parent -->
-			<dependency>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-dependencies</artifactId>
-				<version>${spring-boot.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
+		<dependency>
+			<groupId>org.keycloak</groupId>
+			<artifactId>keycloak-admin-client</artifactId>
+			<version>${keycloak.version}</version>
+			<scope>compile</scope>
+		</dependency>
 
-			<dependency>
-				<groupId>org.keycloak</groupId>
-				<artifactId>keycloak-admin-client</artifactId>
-				<version>${keycloak.version}</version>
-				<scope>compile</scope>
-			</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+			<exclusions>
+				<!-- remove JUnit 4 from classpath -->
+				<exclusion>
+					<groupId>junit</groupId>
+					<artifactId>junit</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
 
-			<dependency>
-				<groupId>org.hibernate.validator</groupId>
-				<artifactId>hibernate-validator</artifactId>
-				<version>6.0.13.Final</version>
-			</dependency>
+		<!-- needed to use the class RestTemplate in tests -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+			<scope>test</scope>
+		</dependency>
 
-			<dependency>
-				<groupId>junit</groupId>
-				<artifactId>junit</artifactId>
-				<version>4.12</version>
-				<scope>test</scope>
-			</dependency>
+		<dependency>
+			<groupId>eu.codearte.catch-exception</groupId>
+			<artifactId>catch-exception</artifactId>
+			<version>1.4.4</version>
+			<scope>test</scope>
+		</dependency>
 
-			<dependency>
-				<groupId>org.hamcrest</groupId>
-				<artifactId>hamcrest-all</artifactId>
-				<version>1.3</version>
-				<scope>test</scope>
-			</dependency>
-			<dependency>
-				<groupId>eu.codearte.catch-exception</groupId>
-				<artifactId>catch-exception</artifactId>
-				<version>1.4.4</version>
-				<scope>test</scope>
-			</dependency>
-
-			<dependency>
-				<groupId>com.google.guava</groupId>
-				<artifactId>guava</artifactId>
-				<version>28.2-jre</version>
-				<scope>test</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>28.2-jre</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
 
 	<build>
 		<finalName>${project.artifactId}</finalName>
 
-		<pluginManagement>
-			<plugins>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-failsafe-plugin</artifactId>
-					<!--https://stackoverflow.com/questions/49363222/maven-failsafe-plugin-surefirebooterforkexception-there-was-an-error-in-the-f-->
-					<version>2.18.1</version>
-				</plugin>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-resources-plugin</artifactId>
-					<version>3.1.0</version>
-				</plugin>
-				<plugin>
-					<groupId>org.springframework.boot</groupId>
-					<artifactId>spring-boot-maven-plugin</artifactId>
-					<version>${spring-boot.version}</version>
-				</plugin>
-				<plugin>
-					<version>3.0.0</version>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-shade-plugin</artifactId>
-				</plugin>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-project-info-reports-plugin</artifactId>
-					<version>2.7</version>
-				</plugin>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-javadoc-plugin</artifactId>
-					<version>2.9.1</version>
-					<configuration>
-						<charset>${project.build.sourceEncoding}</charset>
-						<encoding>${project.build.sourceEncoding}</encoding>
-						<docencoding>${project.build.sourceEncoding}</docencoding>
-						<additionalparam>-Xdoclint:none</additionalparam>
-					</configuration>
-				</plugin>
-				<plugin>
-					<artifactId>maven-release-plugin</artifactId>
-					<version>2.5.2</version>
-					<configuration>
-						<releaseProfiles>release</releaseProfiles>
-						<autoVersionSubmodules>true</autoVersionSubmodules>
-					</configuration>
-				</plugin>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>repackage</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-compiler-plugin</artifactId>
-					<version>3.7.0</version>
-				</plugin>
+			<plugin>
+				<!-- https://stackoverflow.com/a/53433724 -->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.22.0</version>
+			</plugin>
 
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-jar-plugin</artifactId>
-					<version>3.1.0</version>
-					<configuration>
-						<archive>
-							<manifest>
-								<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-								<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-							</manifest>
-							<manifestEntries>
-								<Implementation-Version>${project.version}_${maven.build.timestamp}</Implementation-Version>
-								<Project-buildArtifact>${project.artifactId}</Project-buildArtifact>
-								<Project-buildVersion>${project.version}</Project-buildVersion>
-							</manifestEntries>
-						</archive>
-					</configuration>
-				</plugin>
+			<plugin>
+                <!-- defines which files are integration tests and when to run them -->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<version>2.22.0</version>
+				<configuration>
+					<includes>
+						<include>**/*IT.java</include>
+					</includes>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>integration-test</goal>
+							<goal>verify</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 
-				<plugin>
-					<groupId>org.codehaus.mojo</groupId>
-					<artifactId>buildnumber-maven-plugin</artifactId>
-					<version>1.3</version>
-					<executions>
-						<execution>
-							<phase>validate</phase>
-							<goals>
-								<goal>create</goal>
-							</goals>
-						</execution>
-					</executions>
-					<configuration>
-						<shortRevisionLength>7</shortRevisionLength>
-					</configuration>
-				</plugin>
+			<plugin>
+				<!--https://stackoverflow.com/questions/11500533/access-maven-properties-defined-in-the-pom-->
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>properties-maven-plugin</artifactId>
+				<version>1.0.0</version>
+				<executions>
+					<execution>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>write-project-properties</goal>
+						</goals>
+						<configuration>
+							<outputFile>${project.build.testOutputDirectory}/maven.properties</outputFile>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 
-				<plugin>
-					<groupId>io.fabric8</groupId>
-					<artifactId>docker-maven-plugin</artifactId>
-					<version>0.27.2</version>
-				</plugin>
+			<plugin>
+				<!-- starts a keycloak docker container for the integration tests -->
+				<groupId>io.fabric8</groupId>
+				<artifactId>docker-maven-plugin</artifactId>
+				<version>0.27.2</version>
+				<configuration>
+					<images>
+						<image>
+							<name>keycloak_it:latest</name>
+							<build>
+								<dockerFile>${project.basedir}/keycloakIT.Dockerfile</dockerFile>
+							</build>
+						</image>
+					</images>
+				</configuration>
+				<executions>
+					<execution>
+						<id>cleanup-stop-keycloak</id>
+						<phase>pre-integration-test</phase>
+						<goals>
+							<goal>stop</goal>
+						</goals>
+						<configuration>
+							<allContainers>true</allContainers>
+						</configuration>
+					</execution>
+					<execution>
+						<id>cleanup-remove-keycloak</id>
+						<phase>pre-integration-test</phase>
+						<goals>
+							<goal>remove</goal>
+						</goals>
+						<configuration>
+							<removeMode>all</removeMode>
+						</configuration>
+					</execution>
+					<execution>
+						<id>build-keycloak</id>
+						<phase>pre-integration-test</phase>
+						<goals>
+							<goal>build</goal>
+						</goals>
+						<configuration>
+							<buildArgs.keycloak.version>${keycloak.version}</buildArgs.keycloak.version>
+						</configuration>
+					</execution>
+					<execution>
+						<id>prepare-keycloak</id>
+						<phase>pre-integration-test</phase>
+						<goals>
+							<goal>start</goal>
+						</goals>
+						<configuration>
+							<images>
+								<image>
+									<alias>it-keycloak</alias>
+									<run>
+										<env>
+											<KEYCLOAK_PASSWORD>admin123</KEYCLOAK_PASSWORD>
+											<KEYCLOAK_USER>admin</KEYCLOAK_USER>
+											<KEYCLOAK_LOGLEVEL>ERROR</KEYCLOAK_LOGLEVEL>
+										</env>
+										<cmd>
+											<exec>
+												<arg>-b</arg>
+												<arg>0.0.0.0</arg>
+												<arg>--debug</arg>
+											</exec>
+										</cmd>
+										<ports>
+											<port>+docker.host.ip:docker.port:8080</port>
+										</ports>
+										<wait>
+											<http>
+												<url>http://${docker.host.ip}:${docker.port}/auth/</url>
+												<status>200</status>
+											</http>
+											<time>120000</time>
+										</wait>
+									</run>
+								</image>
+							</images>
+						</configuration>
+					</execution>
+					<execution>
+						<id>stop-keycloak</id>
+						<phase>post-integration-test</phase>
+						<goals>
+							<goal>stop</goal>
+						</goals>
+						<configuration>
+							<allContainers>true</allContainers>
+						</configuration>
+					</execution>
+					<execution>
+						<id>remove-keycloak</id>
+						<phase>post-integration-test</phase>
+						<goals>
+							<goal>remove</goal>
+						</goals>
+						<configuration>
+							<removeMode>all</removeMode>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 
-				<plugin>
-					<groupId>org.jacoco</groupId>
-					<artifactId>jacoco-maven-plugin</artifactId>
-					<!-- https://stackoverflow.com/questions/55272870/surefire-maven-plugin-corrupted-stdout-by-directly-writing-to-native-stream-in-->
-					<version>0.8.5</version>
-				</plugin>
-			</plugins>
-		</pluginManagement>
+			<plugin>
+				<!-- this plugin replaces the placeholders within application-IT.yml needed for the integration tests -->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>3.1.0</version>
+				<executions>
+					<execution>
+						<id>copy-resources-for-integration-tests</id>
+						<phase>pre-integration-test</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>target/test-classes</outputDirectory>
+							<resources>
+								<resource>
+									<directory>src/test/resources</directory>
+									<filtering>true</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<!-- verifies if the majority of tests actually ran; avoids successful build because of accidental skipped tests -->
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<!-- https://stackoverflow.com/questions/55272870/surefire-maven-plugin-corrupted-stdout-by-directly-writing-to-native-stream-in-->
+				<version>0.8.5</version>
+				<executions>
+					<execution>
+						<id>default-prepare-agent</id>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>default-report</id>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>default-check</id>
+						<goals>
+							<goal>check</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<rule>
+									<element>BUNDLE</element>
+									<limits>
+										<limit>
+											<counter>COMPLEXITY</counter>
+											<value>COVEREDRATIO</value>
+											<minimum>0.80</minimum>
+										</limit>
+									</limits>
+								</rule>
+							</rules>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
 	</build>
-
-	<repositories>
-		<repository>
-			<id>central</id>
-			<name>Central Repository</name>
-			<url>https://repo.maven.apache.org/maven2</url>
-			<layout>default</layout>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-		<repository>
-			<id>jboss</id>
-			<name>JBoss Maven Release Repository</name>
-			<url>https://repository.jboss.org/nexus/content/repositories/releases</url>
-		</repository>
-	</repositories>
 </project>
